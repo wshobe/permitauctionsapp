@@ -1,0 +1,51 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Instructions
+{% endblock %}
+
+{% block content %}
+<h3> Product and Permit Markets</h3>
+<ul>
+	<li>Product Market: You will have the role of a producer of a product that will be sold in a market.</li>
+
+	<li>You will manage {{ player.capacity}} capacity units. Think of each capacity unit as a plant that can produce one unit of the product. You will be told the cost of operating the capacity unit, and the unit profit will be the price of the product minus the cost of producing that unit.</li>
+
+	<li>Permits: Producers are required to obtain permits to cover their output. </li>
+
+	<li>Permit Requirements: Different producers will need different numbers of permits for each unit produced. For <i>low users</i> the number of permits per unit output is {{ Constants.emission_intensity_low}}. <i>High users</i> need {{ Constants.emission_intensity_high }} permits for each unit of output. There are {{Constants.num_low_users}} low users in this market and {{Constants.num_high_users}} high users. <b>Your role during today's session will be: <em>{{ player_type}} user</em>.</b></li>
+
+	<li>Product Price: In any period, the product price could be high, {{ high_output_price}} or low, 
+		{{ Constants.low_output_price}}. The sequence of output prices is not known in advance, but the current price at which the output can be sold in a round will be announced at the start of each round. All producers receive the same price for a given round.</li>
+
+	<li>Production Costs: The cost of production differ from one person to another, and new costs are randomly determined for each person at the start of each period. You will also have the cost of obtaining permits for each unit you produce.</li>
+
+</ul>
+
+
+    {% next_button %}
+{% endblock %}
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	table, th, td {
+	    border: 1px solid black;
+	    border-collapse: collapse;
+		font-size: 1em;
+	}
+	th, td {
+	    padding: 5px;
+	    text-align: left;
+	}
+	ul, li {
+	    font-family: verdana;
+	    font-size: larger;
+		padding-bottom: 10px;
+	}
+	</style>
+
+
+{% endblock %}

@@ -56,7 +56,67 @@ class SigninWaitPage(WaitPage):
         return (self.round_number == 1 & self.session.config['show_instructions'] == True)
 
 
-class Instructions(Page):
+class Instructions1(Page):
+    def is_displayed(self):
+        return (self.round_number == 1 & self.session.config['show_instructions'] == True)
+
+    def vars_for_template(self):
+        #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
+        if self.player.emission_intensity  == Constants.emission_intensity_high:
+            player_type = "high"
+            num_bids = Constants.num_bids_high
+        else:
+            player_type = "low"
+            num_bids = Constants.num_bids_low
+        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
+        return {
+                'high_output_price':high_output_price,
+                'player_type': player_type,
+                'num_bids': num_bids,
+                'initial_cash_endowment': self.player.money
+            }
+
+class Instructions2(Page):
+    def is_displayed(self):
+        return (self.round_number == 1 & self.session.config['show_instructions'] == True)
+
+    def vars_for_template(self):
+        #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
+        if self.player.emission_intensity  == Constants.emission_intensity_high:
+            player_type = "high"
+            num_bids = Constants.num_bids_high
+        else:
+            player_type = "low"
+            num_bids = Constants.num_bids_low
+        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
+        return {
+                'high_output_price':high_output_price,
+                'player_type': player_type,
+                'num_bids': num_bids,
+                'initial_cash_endowment': self.player.money
+            }
+
+class Instructions3(Page):
+    def is_displayed(self):
+        return (self.round_number == 1 & self.session.config['show_instructions'] == True)
+
+    def vars_for_template(self):
+        #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
+        if self.player.emission_intensity  == Constants.emission_intensity_high:
+            player_type = "high"
+            num_bids = Constants.num_bids_high
+        else:
+            player_type = "low"
+            num_bids = Constants.num_bids_low
+        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
+        return {
+                'high_output_price':high_output_price,
+                'player_type': player_type,
+                'num_bids': num_bids,
+                'initial_cash_endowment': self.player.money
+            }
+
+class Instructions4(Page):
     def is_displayed(self):
         return (self.round_number == 1 & self.session.config['show_instructions'] == True)
 
@@ -163,7 +223,7 @@ def second_price_auction(num_permits, num_bids, bids):
         auction_price = bids.bid[permits_available]   # First rejected bid
     return auction_price
 
-class AuctionWaitPage2(WaitPage):
+class AuctionWaitPage(WaitPage):
     template_name = 'secondbid/AuctionWaitPage2.html'
     title_text = "Please wait"
     """
@@ -344,10 +404,13 @@ class FinalResults(Page):
 page_sequence = [
     Signin,
     SigninWaitPage,
-    Instructions,
+    Instructions1,
+    Instructions2,
+    Instructions3,
+    Instructions4,
     Auction,
     AuctionConfirm,
-    AuctionWaitPage2,
+    AuctionWaitPage,
     AuctionResults,
     Production,
     RoundResults,

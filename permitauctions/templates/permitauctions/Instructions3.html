@@ -1,0 +1,49 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Instructions
+{% endblock %}
+
+{% block content %}
+
+<h3>Production</h3>
+
+<ul>
+	<li>You will have {{player.capacity}} units of capacity as shown by the rows in the table below.</li>
+	<li>In each period the product price will be either low: {{Constants.low_output_price}}, or high: 
+	{{high_output_price}}. The output price for each period is random with a 50% chance of either price. </li>
+	<li>In this period, suppose that each unit produces a product that is sold for {{Constants.low_output_price}}, (table below, 2nd column).
+	Your units are listed in order of increasing cost (3rd column).
+	One or more permits are needed to operate each capacity unit (4th column).
+	The current value of a permit (5th column) is the difference between the output price and the unit cost, divided by the required number of permits.</li>
+	<li>Permits are indistinguishable, so you will be using the ones you obtain on the capacity units with low costs (and high values) at the top of the table.</li>
+	<li>Remember that your earnings will be determined by differences between the values for permits used and what you pay for the permits.</li>
+</ul>
+
+
+    {% next_button %}
+{% endblock %}
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	table, th, td {
+	    border: 1px solid black;
+	    border-collapse: collapse;
+		font-size: 1em;
+	}
+	th, td {
+	    padding: 5px;
+	    text-align: left;
+	}
+	ul, li {
+	    font-family: verdana;
+	    font-size: larger;
+		padding-bottom: 10px;
+	}
+	</style>
+
+
+{% endblock %}
