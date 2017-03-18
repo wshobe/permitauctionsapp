@@ -61,9 +61,18 @@ class Instructions(Page):
         return (self.round_number == 1 & self.session.config['show_instructions'] == True)
 
     def vars_for_template(self):
-        player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
-        return {'capacity': self.player.capacity,
+        #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
+        if self.player.emission_intensity  == Constants.emission_intensity_high:
+            player_type = "high"
+            num_bids = Constants.num_bids_high
+        else:
+            player_type = "low"
+            num_bids = Constants.num_bids_low
+        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
+        return {
+                'high_output_price':high_output_price,
                 'player_type': player_type,
+                'num_bids': num_bids,
                 'initial_cash_endowment': self.player.money
             }
 
