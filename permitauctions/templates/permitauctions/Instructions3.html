@@ -2,7 +2,7 @@
 {% load staticfiles otree_tags %}
 
 {% block title %}
-    Instructions
+    Instructions: Page 3
 {% endblock %}
 
 {% block content %}
@@ -20,6 +20,30 @@
 	<li>Permits are indistinguishable, so you will be using the ones you obtain on the capacity units with low costs (and high values) at the top of the table.</li>
 	<li>Remember that your earnings will be determined by differences between the values for permits used and what you pay for the permits.</li>
 </ul>
+<div style="margin-left: 100px">
+    <table style="border: 1px solid black;;  padding: 10px; align: center;">
+        <tr><th style=" padding: 10px; text-align: center;">Capacity<br />Unit</th>
+			<th style=" padding: 10px; align: center;">Output<br />price</th>
+			<th style=" padding: 10px; align: center;">Production<br />Cost</th>
+			<th style=" padding: 10px; align: center;">Unit<br />Value</th>
+			<th style=" padding: 10px; align: center;">Permit Value{%if player.emission_intensity > 1 %}<br /><span style="font-size: medium;">
+					(At {{player.emission_intensity}} permits per unit)</span>
+				{% endif %}</th>
+		</tr>
+
+        {% for plant in cost_list %}
+
+        <tr>
+			<td style=" padding: 10px; text-align: center;">{{ plant.0 }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ output_price }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.1 }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.2 }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.3 }}</td>
+		</tr>
+        {% endfor %}
+    </table><br /><br />
+	
+</div>
 
 
     {% next_button %}
@@ -32,7 +56,7 @@
 	table, th, td {
 	    border: 1px solid black;
 	    border-collapse: collapse;
-		font-size: 1em;
+		font-size: larger;
 	}
 	th, td {
 	    padding: 5px;

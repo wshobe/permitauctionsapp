@@ -101,6 +101,21 @@ class Instructions3(Page):
         return (self.round_number == 1 & self.session.config['show_instructions'] == True)
 
     def vars_for_template(self):
+        output_price = self.subsession.output_price
+        # list of (cost, expected value) for each plant
+        cost_list = [
+                (   index,
+                    cost,
+                    self.subsession.output_price - cost,
+                    (self.subsession.output_price - cost)/self.player.emission_intensity
+                ) for index,cost in enumerate(self.player.get_costs())]
+        """cost_list = [
+                        (
+                            cost,
+                            output_price - cost,
+                            (output_price - cost)/self.player.emission_intensity,
+                            output_price
+                        ) for cost in self.player.get_costs()]"""
         #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
         if self.player.emission_intensity  == Constants.emission_intensity_high:
             player_type = "high"
@@ -110,6 +125,8 @@ class Instructions3(Page):
             num_bids = Constants.num_bids_low
         high_output_price = Constants.low_output_price + Constants.high_output_price_increment
         return {
+                'cost_list': cost_list,
+                'max_bid_dollar_value': self.player.money + (self.player.capacity*output_price),
                 'high_output_price':high_output_price,
                 'player_type': player_type,
                 'num_bids': num_bids,
@@ -224,7 +241,6 @@ def second_price_auction(num_permits, num_bids, bids):
     return auction_price
 
 class AuctionWaitPage(WaitPage):
-    template_name = 'secondbid/AuctionWaitPage2.html'
     title_text = "Please wait"
     """
     Almost all of this work is done in memory in a dataframe. This is much faster and less reliant on 
