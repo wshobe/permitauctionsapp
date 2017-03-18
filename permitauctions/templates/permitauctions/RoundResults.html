@@ -1,0 +1,62 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Results for Round {{ subsession.round_number }}
+{% endblock %}
+
+{% block content %}
+
+    <table style="width: 100%;  padding: 10px; text-align: left;">
+		<tr><td style="width: 50%;text-align: left;">
+    		<p></p>
+    		<p >You own {{ player.permits }} 
+				permit{%if player.permits == 1 %}{% else %}s{% endif %}.</p>
+			<p>You purchased {{ player.permits_purchased_auction }} 
+				permit{%if player.permits_purchased_auction > 1 %}s{% endif %} in the auction for {{ subsession.auction_price }}.  
+			</p>
+			<p>You ran {{ player.production_amount }} plants and used {{permits_used}}
+				permit{%if player.production_amount > 1 %}s{% endif %}.</p>
+    		{% if player.min_production > 0 %}
+			<p>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</p>
+			{% endif %}
+    		<p>Each of your plants requires {{ player.emission_intensity }} 
+				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</p>
+    		<p>Your current cash balance is <b>{{ player.money }}</b>. </p>
+		</td>
+		<td style="width: 50%;text-align: left;"> 
+			<p>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</p>
+			<p>Permits for sale at auction this period: {{ permits_available }}</p>
+			<p>Permits sold: {{subsession.number_sold_auction}}
+			<p>Permits retired due to low demand: {{subsession.ecr_reserve_amount_used}}
+			<p>Auction price: {{subsession.auction_price}}.</p>
+			
+		</td></tr>
+    </table>
+	<br />
+
+
+
+    {% next_button %}
+{% endblock %}
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	table, th, td {
+	    border: 1px solid black;
+	    border-collapse: collapse;
+		font-size: 1.1em;
+	}
+	th, td {
+	    padding: 5px;
+	    text-align: center;
+	}
+	</style>
+
+    <!-- or reference a static file -->
+    <link href="{% static "my_app/style.css" %}" rel="stylesheet">
+
+{% endblock %}
+

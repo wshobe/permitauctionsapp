@@ -1,0 +1,17 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+        Veconlab: Participant Login
+{% endblock %}
+
+{% block content %}
+
+You are player: {{player.id_in_group}}
+
+    {% formfield player.computing_ID %}
+    {% formfield player.first_name %}
+    {% formfield player.last_name %}
+
+    {% next_button %}
+{% endblock %}

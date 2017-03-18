@@ -1,0 +1,94 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Auction Results: Round {{ subsession.round_number }}, Player #{{player.id_in_group}}
+{% endblock %}
+
+{% block content %}
+
+    <table style="width: 100%;  padding: 10px;">
+		<tr><td style="width: 50%;">
+    		<p></p>
+    		<p>You own {{ player.permits }} permits.</p>
+    		{% if player.min_production > 0 %}
+			<p>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</p>
+			{% endif %}
+    		<p>Each of your plants requires {{ player.emission_intensity }} 
+				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</p>
+    		<p>Your current cash balance is <b>{{ player.money }}</b>. 
+			</p>
+		</td>
+		<td> 
+			<p>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</p>
+			<p>Permits for sale at auction this period: {{ permits_available }}</p>
+			<p style="margin-left: 15pt;">Permits were sold at a single uniform price of {{subsession.auction_price}}, which was the value of the <em>highest rejected bid</em>.</p>
+			<p style="margin-left: 15pt;">There are {{ num_participants }} players (including yourself) participating.
+			<p style="margin-left: 15pt;">Any ties were broken by a random draw.
+			
+		</td></tr>
+    </table>
+	<h3>Auction results:</h3>
+	
+	<p> The auction closing price for this period was {{subsession.auction_price}}.</p>
+	<p> A total of {{subsession.number_sold_auction}} of the {{ permits_available }} available in the auction were sold.
+	{% if ecr_removed > 0 %}
+		<p> Due to the low demand for permits in the auction, <em>{{ecr_removed}} 
+			permit{%if ecr_removed > 1 %}s{% endif %} 
+			were retired from the auction before the closing price was calculated.</em> </p>
+	{% endif %}
+	<p>
+	<h4>Your bids:</h4>
+    {% for index,accepted,bid in bids %}
+    <span style=
+	{% if index < how_many %}
+		"color: Green;font-weight: bold;font-size: 1.1em;"
+	{% else  %}
+		"color: Crimson;"
+	{% endif %}
+	>{{ bid }}</span>&nbsp&nbsp
+    {% endfor %}&nbsp&nbsp <br/>[Accepted bids are in green (bold font), rejected bids are in red (smaller font)]
+	</p>
+
+	
+	{% if subsession.ecr_reserve_amount > 0 %}
+	<p>Due to high bidding, {{ pool_change }} permits were added to the pool, for a total of {{ pool_total }}.</p>
+	{% elif subsession.ecr_reserve_amount < 0 %}
+	<p>Due to low bidding, {{ pool_change }} permits were removed from the pool, for a total of {{ pool_total }}.</p>
+	{% endif %}
+
+	<p>You spent {{ subsession.auction_price }}/permit on {{ player.permits_purchased_auction }} 
+		permit{% if player.permits_purchased_auction > 1 %}s{% endif %}
+		for a total expenditure of {{total_spent }}.</p>
+
+	<p>You have {{ player.money }} and {{ player.permits }} 
+		permit{% if player.permits_purchased_auction > 1 %}s{% endif %}.</p>
+    {% next_button %}
+{% endblock %}
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	table, th, td {
+	    border: 1px solid black;
+	    border-collapse: collapse;
+		text-size: 1.1em;
+	}
+	th, td {
+	    padding: 5px;
+	    text-align: left;
+	}
+	p {
+	    font-family: verdana;
+	    font-size: 1.1em;
+	}
+	</style>
+
+    <!-- or reference a static file -->
+    <link href="{% static "my_app/style.css" %}" rel="stylesheet">
+
+{% endblock %}
+
+
+

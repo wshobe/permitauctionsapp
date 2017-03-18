@@ -1,0 +1,21 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Confirm Bids: Round {{ subsession.round_number }}, Player #{{player.id_in_group}}
+{% endblock %}
+
+{% block content %}
+
+    <h4>Your bids were:</h4>
+
+	<p>
+    {% for bid in bid_list %}
+    {% if forloop.counter > 1 %},&nbsp&nbsp{%endif%}{{ bid }}
+    {% endfor %}
+	</p>
+
+    Is this correct? If not, go back and correct these values.
+
+    {% next_button %}
+{% endblock %}

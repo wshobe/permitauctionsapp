@@ -1,0 +1,18 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+        Make decisions
+{% endblock %}
+
+{% block content %}
+
+{{ bid_formset.management_form }}
+<ul>
+{% for val, form in decision_values_and_forms %}
+        <li></b> — {{ form }}</li>
+{% endfor %}
+</ul>
+
+    {% next_button %}
+{% endblock %}

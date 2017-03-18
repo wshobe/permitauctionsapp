@@ -1,0 +1,111 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Auction: Round {{ subsession.round_number }}, Player #{{player.id_in_group}}
+{% endblock %}
+
+{% block content %}
+
+	
+    <table style="width: 100%;  padding: 10px;border: 1px solid black;">
+		<tr><td style="width: 50%;">
+    		<p></p>
+    		<p>You own {{ player.permits }} permits.</p>
+    		{% if player.min_production > 0 %}
+			<p>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</p>
+			{% endif %}
+    		<p>Each of your plants requires {{ player.emission_intensity }} 
+				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</p>
+    		<p>Your current cash balance is <b>{{ player.money }}</b>. You can submit bids for any number of permits, as long as the bid total 
+				does not exceed your cash balance plus the sum of permit values shown in the table below. The sum of your bids, must not exceed 
+				<b>{{max_bid_dollar_value}}</b>
+			</p>
+		</td>
+		<td> 
+			<p>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</p>
+			<p>Permits for sale at auction this period: {{ permits_available }}</p>
+			<p style="margin-left: 15pt;">Permits will be sold at a single uniform price equal to the value of the <em>highest rejected bid</em>.
+			<p>Reserve price (minimum bid): {{Constants.reserve_price}}.
+			<p style="margin-left: 15pt;">There are {{ num_participants }} players (including yourself) participating.
+			<p style="margin-left: 15pt;">Ties will be broken by a random draw.
+			
+		</td></tr>
+    </table>
+	<br />	
+    {{ bid_formset.management_form }}
+	
+	<p style="font-size: 16px;color: #9d4e15;">Note: Producing without permits incurs a heavy fine, so please consider bidding for all permits that
+		you think will help you earn money.</p>
+	
+	
+	<h3>Enter your bids:</h3>
+    <table style="border: 1px solid black;;  padding: 10px; align: center;">
+        <tr><th style=" padding: 10px; text-align: center;">Capacity<br />Unit</th>
+			<th style=" padding: 10px; align: center;">Output<br />price</th>
+			<th style=" padding: 10px; align: center;">Production<br />Cost</th>
+			<th style=" padding: 10px; align: center;">Unit<br />Value</th>
+			<th style=" padding: 10px; align: center;">Permit<br />Value</th>
+			<th style=" padding: 10px; align: center;">Enter Bids
+				{%if player.emission_intensity > 1 %}<br /><span style="font-size: 12px;">
+					(Each bid is for {{player.emission_intensity}} permits.)</span>
+				{% endif %}</th>
+		</tr>
+
+        {% for field,plant in bid_table %}
+
+        <tr><td style=" padding: 10px; text-align: center;">{{ forloop.counter }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.3 }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.0 }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.1 }}</td>
+			<td style=" padding: 10px; text-align: center;">{{ plant.2 }}</td>
+			<td style=" padding: 10px; text-align: center;"><table style="border-style: none;"> <tr  style="border-style: none;">
+				<td  style="border-style: none;">{{ field }}</td></tr> </table></td>
+		</tr>
+        {% endfor %}
+
+    </table><br />
+
+<!--    <div>
+		<hr />
+        <h3>Enter your bids:</h3>
+    <table style="padding: 10px; align: center;">
+		{% for form in bid_formset %}
+			 	<tr style="border-style: solid;border-width: 1px;"><td style="border-style: solid;border-width: 1px;">{{ forloop.counter }}</td>
+			{% for field in form %}
+		         <td style="border-style: none;"><table style="border-style: none;"><tr style="border-style: none;">
+					 <td style="border-style: none;">{{ forloop.counter }}</td></tr></table></td>
+			{% endfor %}
+				 </tr>
+		{% endfor %}
+    </table><br />
+    </div>
+-->
+
+    {% next_button %}
+{% endblock %}
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	table, th, td {
+	    border: 1px solid black;
+	    border-collapse: collapse;
+		font-size: 1em;
+	}
+	th, td {
+	    padding: 5px;
+	    text-align: left;
+	}
+	p {
+	    font-family: verdana;
+	    font-size: 1.1em;
+	}
+	</style>
+
+    <!-- or reference a static file -->
+    <link href="{% static "my_app/style.css" %}" rel="stylesheet">
+
+{% endblock %}
+

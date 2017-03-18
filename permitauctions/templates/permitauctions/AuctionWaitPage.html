@@ -1,0 +1,16 @@
+{% extends 'otree/WaitPage.html' %}
+{% load staticfiles otree_tags %}
+{% block title %}{{ title_text }}{% endblock %}
+{% block content %}
+    {{ body_text }}
+	
+	<br /><br /><p style="font-size: 12pt;">Current output price: {{ output_price }}</p>
+	
+	<h4> Your bids:</h4>
+	<p>
+    {% for id,bid in bid_list %}
+    {% if forloop.counter > 1 %},&nbsp&nbsp{%endif%}{{ bid }}
+    {% endfor %}
+    </p>
+	
+{% endblock %}
