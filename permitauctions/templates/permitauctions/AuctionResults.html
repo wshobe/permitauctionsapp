@@ -41,14 +41,21 @@
 	{% if num_bids == 0 %}
 		<p style="padding: 15px;"> You did not have any bids this period.</p>
 	{% else %}
-		<table><tr><th>Accepted</th><th>Rejected</th></tr>
-			<tr><td style="color: Green;font-weight: bold;font-size: 1.1em;">
+		<table style="padding-left: 8px;padding-right: 8px;"><tr><th>Accepted</th><th>Rejected</th></tr>
+			<tr><td style="color: Green;font-weight: bold;font-size: 1.1em;padding-left: 8px;padding-right: 8px;">
     		{% for index,accepted,bid in bids %}
-    		
-			{% if index == how_many_accepted %}
-				</td><td style="color: Crimson;font-size: 1.1em;">
+			{% if index == 0 and no_bids_accepted %}
+				None
+				</td><td style="color: Crimson;font-size: 1.1em;padding-left: 8px;padding-right: 8px;">
+			{% elif index < how_many_accepted %}
+				{{bid}}&nbsp;
+				{% if how_many_accepted == forloop.counter %}
+					</td><td style="color: Crimson;font-size: 1.1em;">
+					{% if no_bids_rejected %}None{% else %}{{bid}}&nbsp;{% endif %}
+				{% endif %}
+			{% elif forloop.counter < num_bids %}
+				{{bid}}&nbsp;
 			{% endif %}
-			{% if how_many_accepted == num_bids and index >= how_many_accepted %}None{% else %}{{ bid }}{% endif %}
     		{% endfor %}</td> </tr>
 		</table>
 	{% endif %} <br />

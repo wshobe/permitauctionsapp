@@ -330,6 +330,8 @@ class AuctionResults(Page):
         bids = self.player.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid','accepted')
         num_bids = len(bids)
         num_successful_bids = bids.aggregate(total_won = Sum('accepted'))['total_won']
+        no_bids_accepted = True if num_successful_bids == 0 else False
+        no_bids_rejected = True if (num_bids == 0 or num_bids == num_successful_bids) else False
         return {
             'player_name': self.player.first_name,
             'player_id': player_id,
@@ -339,6 +341,8 @@ class AuctionResults(Page):
             'this_player_bought': self.player.permits_purchased_auction,
             'how_many_accepted': num_successful_bids,
             'num_bids': num_bids,
+            'no_bids_accepted': no_bids_accepted,
+            'no_bids_rejected': no_bids_rejected,
             'ecr_removed': ecr_removed,
             'auction_price': auction_price,
             'total_spent': auction_price*num_successful_bids,
@@ -389,7 +393,9 @@ class Production(Page):
 class RoundResults(Page):
     def vars_for_template(self):
         return {
-            'permits_used': self.player.emission_intensity * self.player.production_amount
+            'permits_used': self.player.emission_intensity * self.player.production_amount,
+            'spent_auction': self.player.permits_purchased_auction * self.subsession.auction_price,
+            'earnings': self.player.production_amount*self.subsession.output_price
         }
 
 
