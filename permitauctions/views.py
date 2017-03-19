@@ -162,6 +162,7 @@ class Auction(Page):
     def vars_for_template(self):
         output_price = self.subsession.output_price
         # list of (cost, expected value) for each plant
+        costs = self.player.get_costs()
         """        cost_list = [
                         (
                             cost,
@@ -175,7 +176,7 @@ class Auction(Page):
                             output_price - cost,
                             (output_price - cost)/self.player.emission_intensity,
                             output_price
-                        ) for cost in self.player.get_costs()]
+                        ) for cost in costs]
         # get bids for this player
         bid_qs = self.player.bid_set.all()
         #assert len(bid_qs) == Constants.num_bids_per_round
@@ -184,13 +185,15 @@ class Auction(Page):
         bid_fields = [field for field in [form for form in bids_formset]]
 #        assert False
         table_data = [bid.pk for bid in bid_qs]
+        total_net_value = sum([output_price-cost for cost in costs])
+        #assert False,"permit value {:f}".format(test)
         return {
                 'bid_formset': bids_formset,
                 #'bid_values_and_forms': zip([dec.value for dec in bid_qs], bids_formset.forms),
                 'table_data': table_data,
                 'cost_list': cost_list,
                 'bid_table': zip(bid_fields,cost_list),
-                'max_bid_dollar_value': self.player.money + (self.player.capacity*output_price)
+                'max_bid_dollar_value': self.player.money + total_net_value
                 }
 
     def before_next_page(self):
