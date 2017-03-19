@@ -327,9 +327,9 @@ class AuctionResults(Page):
         #pool_total = self.subsession.permits_available + self.subsession.ecr_reserve_amount
         # Retrieve all bids entered for this round regardless of the player
         bid_qs = Bid.objects.filter(player__exact=self.player).filter(bid__isnull=False)
+        #assert False, "permits purchased: %r" % pool_change
         bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id','bid','accepted','player_id')))
         num_bids = len(bids_df)
-        #assert False, "permits purchased: %r" % temp
         purchased = bids_df.groupby('player_id',as_index=False).sum()
         #assert False, "permits purchased: {:r}".format(purchased.accepted)
         #assert num_bids == 8, "num_bids: %r" % num_bids
