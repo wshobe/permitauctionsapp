@@ -9,8 +9,8 @@
 
     <table style="width: 100%;  padding: 10px;">
 		<tr><td style="width: 50%;">
-    		<p></p>
-    		<p>You own {{ player.permits }} permits.</p>
+    		<p>You purchased {{how_many_accepted}} permit{% if how_many_accepted != 1 %}s{% endif %} in the auction</p>
+    		<p>You own {{ player.permits }} permit{% if player.permits != 1 %}s{% endif %}.</p>
     		{% if player.min_production > 0 %}
 			<p>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</p>
 			{% endif %}
@@ -37,19 +37,21 @@
 			permit{%if ecr_removed > 1 %}s{% endif %} 
 			were retired from the auction before the closing price was calculated.</em> </p>
 	{% endif %}
-	<p>
 	<h4>Your bids:</h4>
-    {% for index,accepted,bid in bids %}
-    <span style=
-	{% if index < how_many %}
-		"color: Green;font-weight: bold;font-size: 1.1em;"
-	{% else  %}
-		"color: Crimson;"
-	{% endif %}
-	>{{ bid }}</span>&nbsp&nbsp
-    {% endfor %}&nbsp&nbsp <br/>[Accepted bids are in green (bold font), rejected bids are in red (smaller font)]
-	</p>
-
+	{% if num_bids == 0 %}
+		<p style="padding: 15px;"> You did not have any bids this period.</p>
+	{% else %}
+		<table><tr><th>Accepted</th><th>Rejected</th></tr>
+			<tr><td style="color: Green;font-weight: bold;font-size: 1.1em;">
+    		{% for index,accepted,bid in bids %}
+    		
+			{% if index == how_many_accepted %}
+				</td><td style="color: Crimson;font-size: 1.1em;">
+			{% endif %}
+			{% if how_many_accepted == num_bids and index >= how_many_accepted %}None{% else %}{{ bid }}{% endif %}
+    		{% endfor %}</td> </tr>
+		</table>
+	{% endif %} <br />
 	
 	{% if subsession.ecr_reserve_amount > 0 %}
 	<p>Due to high bidding, {{ pool_change }} permits were added to the pool, for a total of {{ pool_total }}.</p>
@@ -61,8 +63,7 @@
 		permit{% if player.permits_purchased_auction > 1 %}s{% endif %}
 		for a total expenditure of {{total_spent }}.</p>
 
-	<p>You have {{ player.money }} and {{ player.permits }} 
-		permit{% if player.permits_purchased_auction > 1 %}s{% endif %}.</p>
+		<br >
     {% next_button %}
 {% endblock %}
 
@@ -73,7 +74,7 @@
 	table, th, td {
 	    border: 1px solid black;
 	    border-collapse: collapse;
-		text-size: 1.1em;
+		font-size: 1em;
 	}
 	th, td {
 	    padding: 5px;
@@ -81,7 +82,7 @@
 	}
 	p {
 	    font-family: verdana;
-	    font-size: 1.1em;
+	    font-size: 1em;
 	}
 	</style>
 

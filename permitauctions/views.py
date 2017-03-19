@@ -316,47 +316,33 @@ class AuctionWaitPage(WaitPage):
     
     def vars_for_template(self):
         bid_qs = [(dec.pk, dec.bid) for dec in self.player.bid_set.all()]
-        #bid_qs = Bid.objects.filter(player__session_id=self.session.id).filter(round=self.subsession.round_number)
-        #bid_qs = bid_qs.filter(bid__isnull=False).filter(player__exact=self.player)
         return {'bid_list': bid_qs}
 
 
 class AuctionResults(Page):
     def vars_for_template(self):
         pool_change = abs(self.subsession.ecr_reserve_amount_used)
-        #pool_total = self.subsession.permits_available + self.subsession.ecr_reserve_amount
-        # Retrieve all bids entered for this round regardless of the player
-        bid_qs = Bid.objects.filter(player__exact=self.player).filter(bid__isnull=False)
-        #assert False, "permits purchased: %r" % pool_change
-        bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id','bid','accepted','player_id')))
-        num_bids = len(bids_df)
-        purchased = bids_df.groupby('player_id',as_index=False).sum()
-        #assert False, "permits purchased: {:r}".format(purchased.accepted)
-        #assert num_bids == 8, "num_bids: %r" % num_bids
         permits_available = self.subsession.permits_available
         auction_price = self.subsession.auction_price
         ecr_removed = self.subsession.ecr_reserve_amount_used
-        for index,accepted in zip(purchased.index,purchased.accepted):
-            next
         # Retrieve only this player's bids
         player_id = self.player.id
         bids = self.player.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid','accepted')
+        num_bids = len(bids)
         num_successful_bids = bids.aggregate(total_won = Sum('accepted'))['total_won']
         return {
             'player_name': self.player.first_name,
             'player_id': player_id,
             'bids': [(index,bid['accepted'],bid['bid']) for index,bid in enumerate(bids)],
             'permits_available': permits_available,
-            'permits_purchased': zip(purchased.index,purchased.accepted),
             'permits_available': permits_available,
             'this_player_bought': self.player.permits_purchased_auction,
-            'how_many': num_successful_bids,
+            'how_many_accepted': num_successful_bids,
+            'num_bids': num_bids,
             'ecr_removed': ecr_removed,
             'auction_price': auction_price,
             'total_spent': auction_price*num_successful_bids,
-            'bid_list': zip(bids_df.id,bids_df.bid),
             'pool_change': pool_change  #,
-            #'pool_total': pool_total
         }
 
 class Production(Page):
