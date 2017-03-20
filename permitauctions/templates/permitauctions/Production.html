@@ -12,8 +12,8 @@
     		<p >You own {{ player.permits }} 
 				permit{%if player.permits > 1 %}s{% endif %}.</p>
     		{% if player.min_production > 0 %}
-			<p>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</p>
-			{% endif %}
+			<p>You are required to produce with at least {{ player.min_production }} 
+				plant{% if player.min_production > 1 %}s{% endif %}.</p>{% endif %}
     		<p>Each of your plants requires {{ player.emission_intensity }} 
 				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</p>
     		<p>Your current cash balance is <b>{{ player.money }}</b>. </p>
@@ -21,18 +21,21 @@
 		<td style="width: 50%;text-align: left;"> 
 			<p>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</p>
 			<p>Permits for sale at auction this period: {{ permits_available }}</p>
-			<p style="margin-left: 15pt;">Permits were sold at a single uniform price of {{subsession.auction_price}}, which was the value of the <em>highest rejected bid</em>.</p>
+			<p style="margin-left: 15pt;">Permits were sold at a single uniform price of {{subsession.auction_price}}, 
+				which was the value of the <em>highest rejected bid</em>.</p>
 			<p style="margin-left: 15pt;">There are {{ num_participants }} players (including yourself) participating.
 			<p style="margin-left: 15pt;">Any ties were broken by a random draw.
 			
 		</td></tr>
     </table>
 	<br />
-	<p style="font-size: 1.2em;color: #9d4e15;">Running each plant will earn {{ subsession.output_price }} and require {{ player.emission_intensity }} 
+	<p style="font-size: 1.2em;color: #9d4e15;">Running each plant will earn {{ subsession.output_price }} in revenue 
+		from the sale of the unit's output and require {{ player.emission_intensity }} 
 		permit{%if player.emission_intensity > 1 %}s{% endif %}.</p>
-	{% if Constants.must_run > 0 %}
-	<p>You must run at least one plant. Running a plant without enough plants will incur a penalty of {{ Constants.penalty_amount }}.</p>
-	{% endif %}
+		{% if Constants.must_run > 0 %}
+			<p>You must run at least one plant. Running a plant without enough plants will incur a 
+				penalty of {{ Constants.penalty_amount }}.</p>
+		{% endif %}
 
 	<table >
 		<tr><th>Unit<br />Number</th>

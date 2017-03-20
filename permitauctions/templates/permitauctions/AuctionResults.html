@@ -33,7 +33,7 @@
 	<p> The auction closing price for this period was {{subsession.auction_price}}.</p>
 	<p> A total of {{subsession.number_sold_auction}} of the {{ permits_available }} available in the auction were sold.
 	{% if ecr_removed > 0 %}
-		<p> Due to the low demand for permits in the auction, <em>{{ecr_removed}} 
+		<p> Due to the low bids for permits in the auction, <em>{{ecr_removed}} 
 			permit{%if ecr_removed > 1 %}s{% endif %} 
 			were retired from the auction before the closing price was calculated.</em> </p>
 	{% endif %}

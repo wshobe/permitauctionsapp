@@ -107,6 +107,7 @@ class Instructions3(Page):
                 (   index,
                     cost,
                     self.subsession.output_price - cost,
+                    self.player.emission_intensity,
                     (self.subsession.output_price - cost)/self.player.emission_intensity
                 ) for index,cost in enumerate(self.player.get_costs())]
         """cost_list = [
@@ -226,6 +227,8 @@ class Auction(Page):
 
 class AuctionConfirm(Page):
     # TODO: Add a way for user to correct values without having to go back
+    # TODO: Do not allow bids for more than the max total bid amount. 
+    #    Maybe this should be done on the auction page itself.
 
     def vars_for_template(self):
         bid_qs = Bid.objects.filter(player__exact=self.player).filter(bid__isnull=False)

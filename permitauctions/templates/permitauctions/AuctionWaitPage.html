@@ -1,9 +1,14 @@
 {% extends 'otree/WaitPage.html' %}
 {% load staticfiles otree_tags %}
-{% block title %}{{ title_text }}{% endblock %}
+{% block title %}
+	Bids entered: Round {{ subsession.round_number }}, Player #{{player.id_in_group}}
+{% endblock %}
 {% block content %}
     {{ body_text }}
 	
+	<h3>Please wait.</h3> 
+	<h4>The screen will automatically refresh when all players have submitted their bids.<h4>
+	<hr />
 	<br /><br /><p style="font-size: 12pt;">Current output price: {{ output_price }}</p>
 	
 	<h4> Your bids:</h4>
