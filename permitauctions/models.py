@@ -25,21 +25,22 @@ class Constants(BaseConstants):
     emission_intensity_low = 1
     production_capacity_high = 4  # number of plants per  player
     production_capacity_low = 4
-    low_emitter_min_cost = c(9)
+    """    low_emitter_min_cost = c(9)
     low_emitter_max_cost = c(14)
     high_emitter_min_cost = c(5)
     high_emitter_max_cost = c(9)
+    """    
     must_run = 0
 
     low_output_price = c(21)
     high_output_price_increment = c(8)  
     high_price_probability = 0.5
     initial_cash_endowment_high = c(120)
-    initial_cash_endowment_low = c(50)
+    initial_cash_endowment_low = c(60)
 
     ### Auction details
     ecr_trigger_price = c(7)  # Will tell users that permits were taken from the pool
-    reserve_increment = 1
+    reserve_increment = 2
     reserve_price = c(4)  # absolutely no bids below reserve price; don't even let them try
     maximum_bid = c(20)
     bid_price_increment = c(0.5)

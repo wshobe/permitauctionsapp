@@ -11,10 +11,10 @@ def costs1(session,constants,seed):
     num_high_users = session.config['num_high_emitters']
     capacity_low = constants.production_capacity_low
     capacity_high = constants.production_capacity_high
-    low_emitter_min_cost  = int(constants.low_emitter_min_cost)
-    low_emitter_max_cost  = int(constants.low_emitter_max_cost)
-    high_emitter_min_cost = int(constants.high_emitter_min_cost)
-    high_emitter_max_cost = int(constants.high_emitter_max_cost)
+    low_emitter_min_cost  = int(session.config['low_emitter_min_cost'])
+    low_emitter_max_cost  = int(session.config['low_emitter_max_cost'])
+    high_emitter_min_cost = int(session.config['high_emitter_min_cost'])
+    high_emitter_max_cost = int(session.config['high_emitter_max_cost'])
     high = np.random.randint(high_emitter_min_cost,high_emitter_max_cost+1,size=(num_rounds*num_high_users,capacity_high))
     low = np.random.randint(low_emitter_min_cost,low_emitter_max_cost+1,size=(num_rounds*num_low_users,capacity_low))
     output_table = {}

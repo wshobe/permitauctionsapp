@@ -2,6 +2,7 @@ import os
 from os import environ
 
 import dj_database_url
+#from otree.api import Currency as c, currency_range
 #from boto.mturk import qualification
 
 import otree.settings
@@ -92,7 +93,12 @@ SESSION_CONFIGS = [
     'output_price_random_seed': 1288,
     'show_instructions': True,
     'last_round': 3,
-    'debug': DEBUG
+    'debug': DEBUG,
+    'low_emitter_min_cost': 9,
+    'low_emitter_max_cost': 14,
+    'high_emitter_min_cost': 5,
+    'high_emitter_max_cost': 9
+
     #     'name': '...',
     #     'display_name': '...',
     #     'num_demo_participants': ...,
