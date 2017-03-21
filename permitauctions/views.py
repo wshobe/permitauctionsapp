@@ -17,10 +17,12 @@ def vars_for_all_templates(self):
     ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']  # compliance reserve
     debug = self.session.config['debug']
     output_price = self.subsession.output_price
+    high_output_price = self.session.config['low_output_price'] + self.session.config['high_output_price_increment']
     return {
                 'permits_available': permits_available,
                 'ecr_reserve_amount': ecr_reserve_amount,
                 'output_price': output_price,
+                'high_output_price': high_output_price,
                 'num_participants': num_participants,
                 'rounds':list(range(self.session.config['last_round'])),
                 'debug': debug
@@ -69,9 +71,7 @@ class Instructions1(Page):
         else:
             player_type = "low"
             num_bids = Constants.num_bids_low
-        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
         return {
-                'high_output_price':high_output_price,
                 'player_type': player_type,
                 'num_bids': num_bids,
                 'initial_cash_endowment': self.player.money
@@ -89,9 +89,7 @@ class Instructions2(Page):
         else:
             player_type = "low"
             num_bids = Constants.num_bids_low
-        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
         return {
-                'high_output_price':high_output_price,
                 'player_type': player_type,
                 'num_bids': num_bids,
                 'initial_cash_endowment': self.player.money
@@ -125,11 +123,9 @@ class Instructions3(Page):
         else:
             player_type = "low"
             num_bids = Constants.num_bids_low
-        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
         return {
                 'cost_list': cost_list,
                 'max_bid_dollar_value': self.player.money + (self.player.capacity*output_price),
-                'high_output_price':high_output_price,
                 'player_type': player_type,
                 'num_bids': num_bids,
                 'initial_cash_endowment': self.player.money
@@ -147,13 +143,11 @@ class Instructions4(Page):
         else:
             player_type = "low"
             num_bids = Constants.num_bids_low
-        high_output_price = Constants.low_output_price + Constants.high_output_price_increment
         table_data = make_initial_rounds_table(self.session,Constants)
         table_data.output_prices = table_data.output_prices.astype(int)
         #assert False
         return {
                 'num_rounds':Constants.num_rounds,
-                'high_output_price':high_output_price,
                 'player_type': player_type,
                 'num_bids': num_bids,
                 'table_data':table_data,
@@ -273,8 +267,8 @@ class AuctionWaitPage(WaitPage):
         auction_price = second_price_auction(permits_available,num_bids, bids_df)
         self.subsession.initial_auction_price = auction_price
         starting_ecr_reserve = self.session.config['initial_ecr_reserve_amount']
-        pcr_trigger = Constants.price_containment_trigger
-        pcr_available = Constants.price_containment_reserve_amount
+        pcr_trigger = self.session.config['price_containment_trigger']
+        pcr_available = self.session.config['price_containment_reserve_amount']
         # If the initial price is below the ecr_trigger, remove some allowances from the ecr.
         if auction_price < Constants.ecr_trigger_price:
             diff = Constants.ecr_trigger_price - auction_price

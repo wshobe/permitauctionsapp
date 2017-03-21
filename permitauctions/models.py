@@ -25,15 +25,10 @@ class Constants(BaseConstants):
     emission_intensity_low = 1
     production_capacity_high = 4  # number of plants per  player
     production_capacity_low = 4
-    """    low_emitter_min_cost = c(9)
-    low_emitter_max_cost = c(14)
-    high_emitter_min_cost = c(5)
-    high_emitter_max_cost = c(9)
-    """    
     must_run = 0
 
-    low_output_price = c(21)
-    high_output_price_increment = c(8)  
+    #low_output_price = c(21)
+    #high_output_price_increment = c(8)  
     high_price_probability = 0.5
     initial_cash_endowment_high = c(120)
     initial_cash_endowment_low = c(60)
@@ -47,8 +42,8 @@ class Constants(BaseConstants):
     num_bids_high = 4
     num_bids_low = 4
 
-    price_containment_trigger = c(12)
-    price_containment_reserve_amount = 10  # Max permits to add if price over containment trigger
+    #price_containment_trigger = c(12)
+    #price_containment_reserve_amount = 10  # Max permits to add if price over containment trigger
     # simply add permits to bring the price down
     penalty_amount = c(25)  # can run without permits, but it's bad
 
@@ -84,7 +79,7 @@ class Subsession(BaseSubsession):
             """
             all_costs = costs1(self.session,Constants,self.session.config['random_seed'])
             self.session.vars['costs1'] = all_costs
-            output_prices = generate_output_prices(Constants,self.session.config['output_price_random_seed'],Constants.num_rounds)
+            output_prices = generate_output_prices(self.session,Constants,self.session.config['output_price_random_seed'])
             self.session.vars['output_prices'] = output_prices
         all_costs = self.session.vars['costs1']
         self.output_price = self.session.vars['output_prices'][self.round_number-1]
@@ -114,9 +109,9 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    first_name = models.CharField(initial='Fred')
-    last_name = models.CharField(initial='Jones')
-    computing_ID = models.CharField(initial='fj2b')
+    first_name = models.CharField()
+    last_name = models.CharField()
+    computing_ID = models.CharField()
     money = models.CurrencyField()
     permits = models.PositiveIntegerField(initial=0)
     capacity = models.PositiveIntegerField()
