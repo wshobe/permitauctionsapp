@@ -31,9 +31,9 @@ def assign_costs(player,data,player_index,):
     player.production_cost4 = c(costs[3])"""
     return costs
 
-def generate_output_prices(constants,output_price_seed):
+def generate_output_prices(constants,output_price_seed,num_rounds):
     np.random.seed(output_price_seed)
-    output_prices = float(constants.low_output_price) + bernoulli.rvs(constants.high_price_probability, size=constants.num_rounds)*float(constants.high_output_price_increment)
+    output_prices = float(constants.low_output_price) + bernoulli.rvs(constants.high_price_probability, size=num_rounds)*float(constants.high_output_price_increment)
     #output_prices = np.random.randint(constants.low_output_price,constants.high_output_price+1,size=constants.num_rounds)
     return output_prices.astype(float) 
 

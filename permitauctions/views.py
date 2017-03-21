@@ -1,14 +1,14 @@
 from otree.api import Currency as c, currency_range
 from . import models
 from ._builtin import Page, WaitPage
-from .models import Constants
+from .models import Constants, Bid
 from math import floor
 import random
 import numpy as np
 import pandas as pd
 from django.db.models import Count, Min, Sum, Avg
-
-from .models import Constants, Bid
+from .generate_random_costs import costs1, assign_costs, generate_output_prices
+from .helper_functions import make_initial_rounds_table
 from django.forms import modelformset_factory
 
 def vars_for_all_templates(self):
@@ -22,6 +22,7 @@ def vars_for_all_templates(self):
                 'ecr_reserve_amount': ecr_reserve_amount,
                 'output_price': output_price,
                 'num_participants': num_participants,
+                'rounds':list(range(self.session.config['last_round'])),
                 'debug': debug
     }
 
@@ -147,10 +148,16 @@ class Instructions4(Page):
             player_type = "low"
             num_bids = Constants.num_bids_low
         high_output_price = Constants.low_output_price + Constants.high_output_price_increment
+        table_data = make_initial_rounds_table(self.session,Constants)
+        table_data.output_prices = table_data.output_prices.astype(int)
+        #assert False
         return {
+                'num_rounds':Constants.num_rounds,
                 'high_output_price':high_output_price,
                 'player_type': player_type,
                 'num_bids': num_bids,
+                'table_data':table_data,
+                'output_prices':table_data.output_prices[:self.subsession.round_number],
                 'initial_cash_endowment': self.player.money
             }
 
@@ -185,13 +192,16 @@ class Auction(Page):
         bids_formset = BidFormSet(queryset=bid_qs)
         bid_fields = [field for field in [form for form in bids_formset]]
 #        assert False
-        table_data = [bid.pk for bid in bid_qs]
+        #table_data = [bid.pk for bid in bid_qs]
+        table_data = make_initial_rounds_table(self.session,Constants)
+        output_prices = table_data.output_prices.astype(int)[:self.subsession.round_number]
         total_net_value = sum([output_price-cost for cost in costs])
         #assert False,"permit value {:f}".format(test)
         return {
                 'bid_formset': bids_formset,
                 #'bid_values_and_forms': zip([dec.value for dec in bid_qs], bids_formset.forms),
                 'table_data': table_data,
+                'output_prices':output_prices,
                 'cost_list': cost_list,
                 'bid_table': zip(bid_fields,cost_list),
                 'max_bid_dollar_value': self.player.money + total_net_value

@@ -29,9 +29,10 @@
 		</td></tr>
     </table>
 	<br />
-	<p style="font-size: 1.2em;color: #9d4e15;">Running each plant will earn {{ subsession.output_price }} in revenue 
-		from the sale of the unit's output and require {{ player.emission_intensity }} 
+	<p style="font-size: 1.1em;color: #9d4e15;">Running each plant will earn {{ subsession.output_price }} in revenue 
+		from the sale of the unit's output and will require {{ player.emission_intensity }} 
 		permit{%if player.emission_intensity > 1 %}s{% endif %}.</p>
+	<p  style="font-size: 1.1em;color: #9d4e15;">Plants will be run in order of profitability, with more profitable (lower cost) plants run first.</p>
 		{% if Constants.must_run > 0 %}
 			<p>You must run at least one plant. Running a plant without enough plants will incur a 
 				penalty of {{ Constants.penalty_amount }}.</p>

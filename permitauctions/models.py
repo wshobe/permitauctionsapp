@@ -83,7 +83,7 @@ class Subsession(BaseSubsession):
             """
             all_costs = costs1(self.session,Constants,self.session.config['random_seed'])
             self.session.vars['costs1'] = all_costs
-            output_prices = generate_output_prices(Constants,self.session.config['output_price_random_seed'])
+            output_prices = generate_output_prices(Constants,self.session.config['output_price_random_seed'],Constants.num_rounds)
             self.session.vars['output_prices'] = output_prices
         all_costs = self.session.vars['costs1']
         self.output_price = self.session.vars['output_prices'][self.round_number-1]

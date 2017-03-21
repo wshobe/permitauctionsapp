@@ -8,28 +8,36 @@
 {% block content %}
 
 	
-    <table style="width: 100%;  padding: 10px;border: 1px solid black;">
+    <table style="width: 100%; padding: 10px;border: 1px solid black;">
 		<tr><td style="width: 50%;">
-    		<p></p>
-    		<p>You own {{ player.permits }} permits.</p>
+    		<ul>
+    		<li>You own {{ player.permits }} permits.</li>
     		{% if player.min_production > 0 %}
-			<p>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</p>
+			<li>You are required to produce with at least {{ player.min_production }} plant{% if player.min_production > 1 %}s{% endif %}.</li>
 			{% endif %}
-    		<p>Each of your plants requires {{ player.emission_intensity }} 
-				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</p>
-    		<p>Your current cash balance is <b>{{ player.money }}</b>. You can submit bids for any number of permits, as long as the bid total 
-				does not exceed your cash balance plus the sum of permit values shown in the table below. The sum of your bids, must not exceed 
-				<b>{{max_bid_dollar_value}}</b>
-			</p>
+    		<li>Each of your plants requires {{ player.emission_intensity }} 
+				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</li>
+    		<li>Your current cash balance is <b>{{ player.money }}</b>. You can submit bids for any number of permits, as long as the bid total 
+				does not exceed your cash balance plus the sum of permit values shown in the table below. </li>
+			<li>The sum of your bids, must not exceed <b>{{max_bid_dollar_value}}</b>.</li>
+		</ul>
 		</td>
 		<td> 
-			<p>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</p>
-			<p>Permits for sale at auction this period: {{ permits_available }}</p>
-			<p style="margin-left: 15pt;">Permits will be sold at a single uniform price equal to the value of the <em>highest rejected bid</em>.
-			<p>Reserve price (minimum bid): {{Constants.reserve_price}}.
-			<p style="margin-left: 15pt;">There are {{ num_participants }} players (including yourself) participating.
-			<p style="margin-left: 15pt;">Ties will be broken by a random draw.
-			
+			<ul>
+			<li>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</li>
+			<li>Permits for sale at auction this period: {{ permits_available }}</li>
+			 <li style="margin-left: 15pt;">Permits will be sold at a single uniform price equal to the value of the <em>highest rejected bid</em>.</li>
+			<li>Reserve price (minimum bid): {{Constants.reserve_price}}.</li>
+			<li>There are {{ num_participants }} players (including yourself) participating.</li>
+			</ul>
+			<table><tr><td>
+	    		<ul>
+				<li>There are {{Constants.price_containment_reserve_amount}} permits to be made available if the auction price 
+					would close above {{Constants.price_containment_trigger}}.</li>
+				<li>If the auction price would close below {{Constants.ecr_trigger_price}}, 
+					then up to {{session.config.initial_ecr_reserve_amount}} permits may be retired.</li>
+			</td></tr></table>
+			</ul>
 		</td></tr>
     </table>
 	<br />	
@@ -37,6 +45,10 @@
 	
 	<p style="font-size: 16px;color: #9d4e15;">Note: Producing without permits incurs a heavy fine, so please consider bidding for all permits that
 		you think will help you earn money.</p>
+	{%if player.emission_intensity > 1 %}
+		<p style="font-size: 16px;color: #9d4e15;">Each of your bids will be for {{ player.emission_intensity }} permits.</p>
+		
+	{% endif %}
 	
 	
 	<h3>Enter your bids:</h3>
@@ -48,7 +60,8 @@
 			<th style=" padding: 10px; align: center;">Permit Value<br />(for this<br />capacity unit)</th>
 			<th style=" padding: 10px; align: center;">Enter Bids
 				{%if player.emission_intensity > 1 %}<br /><span style="font-size: 12px;">
-					(Each bid is for {{player.emission_intensity}} permits.)</span>
+					(Each bid is for {{player.emission_intensity}} permits, so<br />
+					your cost will be twice the bid amount.)</span>
 				{% endif %}</th>
 		</tr>
 
@@ -66,23 +79,38 @@
 
     </table><br />
 
-<!--    <div>
-		<hr />
-        <h3>Enter your bids:</h3>
-    <table style="padding: 10px; align: center;">
-		{% for form in bid_formset %}
-			 	<tr style="border-style: solid;border-width: 1px;"><td style="border-style: solid;border-width: 1px;">{{ forloop.counter }}</td>
-			{% for field in form %}
-		         <td style="border-style: none;"><table style="border-style: none;"><tr style="border-style: none;">
-					 <td style="border-style: none;">{{ forloop.counter }}</td></tr></table></td>
-			{% endfor %}
-				 </tr>
-		{% endfor %}
-    </table><br />
-    </div>
--->
 
     {% next_button %}
+	
+	<br /><hr><br />
+	<table>
+		<tr>
+		<th>Round</th>
+        {% for round in table_data.round_numbers %}
+			<th> {{ round }}</th>
+        {% endfor %}
+		</tr>
+		<tr>
+			<td>Permits available</td>
+        {% for cap in table_data.period_caps %}
+			<td> {{ cap }}</td>
+        {% endfor %}
+		</tr>
+		<tr>
+			<td>Permit demand<br />at full capacity</td>
+        {% for full_capacity_demand in table_data.full_capacity_permit_demand %}
+			<td> {{ full_capacity_demand }}</td>
+        {% endfor %}
+		</tr>
+		<tr>
+			<td>Output price</td>
+        {% for output_price in output_prices %}
+			<td> {{ output_price }}</td>
+        {% endfor %}
+		</tr>
+	</table>
+	
+	
 {% endblock %}
 
 {% block styles %}
@@ -101,6 +129,13 @@
 	p {
 	    font-family: verdana;
 	    font-size: 1.1em;
+	}
+	li {
+	    font-family: verdana;
+	    font-size: 1.1em;
+		padding-bottom: 8px;
+		padding-left: 0px;
+		
 	}
 	</style>
 

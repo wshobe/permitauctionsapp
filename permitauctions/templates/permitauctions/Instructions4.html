@@ -21,6 +21,33 @@
 
 
     {% next_button %}
+	
+	<br /><hr><br />
+	<table>
+		<tr>
+		<th>Round</th>
+        {% for round in table_data.round_numbers %}
+			<th> {{ round }}</th>
+        {% endfor %}
+		</tr>
+		<tr>
+			<td>Permits available</td>
+        {% for cap in table_data.period_caps %}
+			<td> {{ cap }}</td>
+        {% endfor %}
+		</tr>
+		<tr>
+			<td>Permit demand<br />at full capacity</td>
+        {% for full_capacity_demand in table_data.full_capacity_permit_demand %}
+			<td> {{ full_capacity_demand }}</td>
+        {% endfor %}
+		</tr>
+	</table>
+	
+	
+	
+	
+	
 {% endblock %}
 
 {% block styles %}
