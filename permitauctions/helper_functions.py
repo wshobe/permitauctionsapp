@@ -20,3 +20,4 @@ def make_initial_rounds_table(session,constants):
                         index=round_numbers,
                         columns=['round_numbers','period_caps','output_prices','full_capacity_permit_demand'])
     return table_data
+

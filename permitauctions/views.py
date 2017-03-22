@@ -205,28 +205,28 @@ class Auction(Page):
         # get the raw submitted data as dict
         submitted_data = self.form.data
         if self.player.role() == 'high_emitter':
-            num_bids = Constants.num_bids_high
+            num_bids = int(Constants.num_bids_high)
         else:
             num_bids = Constants.num_bids_low
         # get all bids belonging to this player and save as dict with bid ID lookup
         bid_objs_by_id = {dec.pk: dec for dec in self.player.bid_set.all()}
-        assert len(bid_objs_by_id) == num_bids
+        #assert len(bid_objs_by_id) == num_bids
 
         for i in range(num_bids):
             input_prefix = 'form-%d-' % i
-
             # get the inputs
             dec_id = int(submitted_data[input_prefix + 'id'])
-            bid = submitted_data[input_prefix + 'bid']
-            # lookup by ID and save submitted data
-            dec = bid_objs_by_id[dec_id]
-
-            if bid != '':
-                dec.bid = bid
-            else:
-                dec.bid = None
-            # important: save to DB!
-            dec.save()
+            bid_submitted = submitted_data[input_prefix + 'bid']
+            # double the bids for high emitters
+            for j in range(self.player.emission_intensity):
+                # lookup by ID and save submitted data
+                bid_row = bid_objs_by_id[dec_id+(j*num_bids)]
+                if bid_submitted != '':
+                    bid_row.bid = bid_submitted
+                else:
+                    bid_row.bid = None
+                # important: save to DB!
+                bid_row.save()
 
 
 class AuctionConfirm(Page):
@@ -235,7 +235,7 @@ class AuctionConfirm(Page):
     #    Maybe this should be done on the auction page itself.
 
     def vars_for_template(self):
-        bid_qs = Bid.objects.filter(player__exact=self.player).filter(bid__isnull=False)
+        bid_qs = Bid.objects.filter(player__exact=self.player).filter(bid__isnull=False).order_by('-bid')
         return {'bid_list': [dec.bid for dec in bid_qs]}
         #return {'bid_list': self.player.get_bids()}
 
@@ -273,7 +273,7 @@ class AuctionWaitPage(WaitPage):
         if auction_price < Constants.ecr_trigger_price:
             diff = Constants.ecr_trigger_price - auction_price
             # Just division, not floor division
-            removed = min(round((diff / c(0.6) * Constants.reserve_increment)), starting_ecr_reserve)
+            removed = min(round(diff * Constants.reserve_increment), starting_ecr_reserve)
             self.subsession.ecr_reserve_amount_used = removed
             permits_available = permits_available - removed
             auction_price = second_price_auction(permits_available,num_bids, bids_df)

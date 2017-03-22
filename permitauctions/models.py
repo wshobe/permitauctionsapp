@@ -21,7 +21,7 @@ class Constants(BaseConstants):
     num_rounds = 10
 
     ### Production constants
-    emission_intensity_high = 2  # permits required per plant
+    emission_intensity_high = 2  # permits required per plant ***Change this at your peril!!!
     emission_intensity_low = 1
     production_capacity_high = 4  # number of plants per  player
     production_capacity_low = 4
@@ -158,6 +158,11 @@ class Player(BasePlayer):
             bid.round = self.subsession.round_number
             bid.pid_in_group = self.id_in_group   
             bid.save()   # important: save to DB!
+            if self.role() == 'high_emitter':
+                bid = self.bid_set.create()    # create a second bid object for high emitters
+                bid.round = self.subsession.round_number
+                bid.pid_in_group = self.id_in_group   
+                bid.save()   
 
     def generate_unit_stubs(self,player_costs):
         """
@@ -168,11 +173,10 @@ class Player(BasePlayer):
             capacity = Constants.production_capacity_high
         else:
             capacity = Constants.production_capacity_low
-        for i in range(capacity):
+        for i in range(capacity):            
             unit = self.unit_set.create()    # create a new bid object as part of the player's bid set
             unit.unit_num=i
             unit.cost = player_costs[i]
-            #bid.value = random.randint(1, 10)   # don't forget to "import random" before!
             unit.save()   # important: save to DB!
 
         

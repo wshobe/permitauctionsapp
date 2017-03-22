@@ -86,7 +86,7 @@ SESSION_CONFIGS = [
     'permits_persist': True,
     'initial_cap': 22,
     'cap_decrement': 1,
-    'initial_ecr_reserve_amount': 2,
+    'initial_ecr_reserve_amount': 5,
     'num_low_emitters': 1,
     'num_high_emitters': 1,
     'random_seed': 113,

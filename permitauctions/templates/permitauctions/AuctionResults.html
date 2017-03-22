@@ -51,9 +51,9 @@
 				{{bid}}&nbsp;
 				{% if how_many_accepted == forloop.counter %}
 					</td><td style="color: Crimson;font-size: 1.1em;">
-					{% if no_bids_rejected %}None{% else %}{{bid}}&nbsp;{% endif %}
+					{% if no_bids_rejected %}None{% endif %}
 				{% endif %}
-			{% elif forloop.counter < num_bids %}
+			{% elif forloop.counter <= num_bids %}
 				{{bid}}&nbsp;
 			{% endif %}
     		{% endfor %}</td> </tr>
