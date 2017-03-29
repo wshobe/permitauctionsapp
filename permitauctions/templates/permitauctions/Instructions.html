@@ -16,8 +16,8 @@
 
 	<li>Permit Requirements: Different producers will need different numbers of permits for each unit produced. For <i>low users</i> the number of permits per unit output is {{ Constants.emission_intensity_low}}. <i>High users</i> need {{ Constants.emission_intensity_high }} permits for each unit of output. There are {{Constants.num_low_users}} low users in this market and {{Constants.num_high_users}} high users. <b>Your role during today's session will be: <em>{{ player_type}} user</em>.</b></li>
 
-	<li>Product Price: In any period, the product price could be high, {{ high_output_price}} or low, 
-		{{ Constants.low_output_price}}. The sequence of output prices is not known in advance, but the current price at which the output can be sold in a round will be announced at the start of each round. All producers receive the same price for a given round.</li>
+	<li>Product Price: In any period, the product price could be high, {{ high_output_price}} or low,
+		{{ session.low_output_price}}. The sequence of output prices is not known in advance, but the current price at which the output can be sold in a round will be announced at the start of each round. All producers receive the same price for a given round.</li>
 
 	<li>Production Costs: The cost of production differ from one person to another, and new costs are randomly determined for each person at the start of each period. You will also have the cost of obtaining permits for each unit you produce.</li>
 
@@ -45,7 +45,7 @@
 
 <ul>
 	<li>You will have {{player.capacity}} units of capacity as shown by the rows in the table below.</li>
-	<li>In each period the product price will be either low: {{Constants.low_output_price}}, or high: 
+	<li>In each period the product price will be either low: {{Constants.low_output_price}}, or high:
 	{{high_output_price}}. The output price for each period is random with a 50% chance of either price. </li>
 	<li>In this period, suppose that each unit produces a product that is sold for {{Constants.low_output_price}}, (table below, 2nd column).
 	Your units are listed in order of increasing cost (3rd column).
@@ -59,7 +59,7 @@
 <h3>Session information</h3>
 
 <ul>
-	<li>Series of Periods: There will be {{session.config.last_round}} periods in this session, each with an auction followed by a production decision.</li>
+	<li>Series of Periods: There will be {{Constants.num_rounds}} periods in this session, each with an auction followed by a production decision.</li>
 	<li>You can make as many bids as the bid entry form allows, which will be {{Constants.num_bids_low}} for low users and {{Constants.num_bids_high}} for high users.</li>
 	<li>Production decision: After you know how many permits you have to work with, you will decide which capacity units to operate, which determines how many permits will be needed to meet the "compliance" obligation.</li>
 	<li>Permits may be used for production in the current period or saved for use in later periods. Permits will have not value at the end of the last period.</li>

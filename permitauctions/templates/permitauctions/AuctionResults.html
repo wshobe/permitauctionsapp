@@ -43,7 +43,7 @@
 	{% else %}
 		<table style="padding-left: 8px;padding-right: 8px;"><tr><th>Accepted</th><th>Rejected</th></tr>
 			<tr><td style="color: Green;font-weight: bold;font-size: 1.1em;padding-left: 8px;padding-right: 8px;">
-    		{% for index,accepted,bid in bids %}
+    		{% for index, accepted, bid in bids %}
 			{% if index == 0 and no_bids_accepted %}
 				None
 				</td><td style="color: Crimson;font-size: 1.1em;padding-left: 8px;padding-right: 8px;">

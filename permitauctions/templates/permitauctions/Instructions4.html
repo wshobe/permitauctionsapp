@@ -10,18 +10,18 @@
 <h3>Session information</h3>
 
 <ul>
-	<li>Series of periods: There will be {{session.config.last_round}} periods in this session, each with an auction followed by a production decision.</li>
+	<li>Series of periods: There will be {{Constants.num_rounds}} periods in this session, each with an auction followed by a production decision.</li>
 	<li>You can make as many bids as the bid entry form allows, which will be {{Constants.num_bids_low}} for low users and {{Constants.num_bids_high}} for high users.</li>
 	<li>Production decision: After you know how many permits you have to work with, you will decide which capacity units to operate. This determines how many permits will be needed to meet the "compliance" obligation.</li>
 	<li>Permits may be used for production in the current period or saved for use in later periods. Permits will have no value at the end of the last period.</li>
-	{% if Constants.must_run > 0 %}<li>Must-serve capacity: In each period, all producers must produce at least 
+	{% if Constants.must_run > 0 %}<li>Must-serve capacity: In each period, all producers must produce at least
 		[[Constants.must_run]] unit of output.</li>{% endif%}
 	<li>The penalty for producing output without the necessary permits is {{Constants.penalty_amount}} per missing permit. (Very expensive!)</li>
 	<li>Your starting cash endowment is: {{initial_cash_endowment}}. (Your cash holdings will change each round, depending on the actions you take, actions such as buying permits and operating production units.)</li>
 
 
     {% next_button %}
-	
+
 	<br /><hr><br />
 	<table>
 		<tr>
@@ -43,11 +43,11 @@
         {% endfor %}
 		</tr>
 	</table>
-	
-	
-	
-	
-	
+
+
+
+
+
 {% endblock %}
 
 {% block styles %}

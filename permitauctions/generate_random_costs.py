@@ -4,40 +4,32 @@ import numpy as np
 from scipy.stats import bernoulli
 from otree.api import Currency as c
 
-def costs1(session,constants,seed):
-    np.random.seed(seed)
-    num_rounds = constants.num_rounds
-    num_low_users = session.config['num_low_emitters']
-    num_high_users = session.config['num_high_emitters']
+def costs1(session, constants):
+    np.random.seed(session.config['random_seed'])
+    num_rounds = session.config['num_rounds']
+    num_lowE = session.config['num_low_emitters']
+    num_highE = session.config['num_high_emitters']
     capacity_low = constants.production_capacity_low
     capacity_high = constants.production_capacity_high
-    low_emitter_min_cost  = int(session.config['low_emitter_min_cost'])
-    low_emitter_max_cost  = int(session.config['low_emitter_max_cost'])
-    high_emitter_min_cost = int(session.config['high_emitter_min_cost'])
-    high_emitter_max_cost = int(session.config['high_emitter_max_cost'])
-    high = np.random.randint(high_emitter_min_cost,high_emitter_max_cost+1,size=(num_rounds*num_high_users,capacity_high))
-    low = np.random.randint(low_emitter_min_cost,low_emitter_max_cost+1,size=(num_rounds*num_low_users,capacity_low))
-    output_table = {}
-    output_table['high_emitters'] = high.astype(float)
-    output_table['low_emitters'] = low.astype(float)
+    lowE_min_cost  = session.config['low_emitter_min_cost']
+    lowE_max_cost  = session.config['low_emitter_max_cost']
+    highE_min_cost = session.config['high_emitter_min_cost']
+    highE_max_cost = session.config['high_emitter_max_cost']
+    high = np.random.randint(highE_min_cost, highE_max_cost + 1, size=(num_rounds * num_highE, capacity_high))
+    low = np.random.randint(lowE_min_cost, lowE_max_cost + 1, size=(num_rounds * num_lowE, capacity_low))
+    output_table = {
+    	'high_emitter': high.astype(float),
+    	'low_emitter': low.astype(float)
+    }
     return output_table
 
-    
-def assign_costs(player,data,player_index,):
-    costs = sorted(data[player_index])
-    """player.production_cost1 = c(costs[0])
-    player.production_cost2 = c(costs[1])
-    player.production_cost3 = c(costs[2])
-    player.production_cost4 = c(costs[3])"""
-    return costs
+def generate_output_prices(session, constants):
+    np.random.seed(session.config['output_price_random_seed'])
+    price_gap = session.config['high_output_price'] - session.config['low_output_price']
+    output_prices = session.config['low_output_price'] + bernoulli.rvs(constants.high_price_probability, size=constants.num_rounds) * price_gap
+    return output_prices.astype(float)
 
-def generate_output_prices(session,constants,output_price_seed):
-    np.random.seed(output_price_seed)
-    output_prices = float(session.config['low_output_price']) + bernoulli.rvs(constants.high_price_probability, 
-                    size=constants.num_rounds)*float(session.config['high_output_price_increment'])
-    #output_prices = np.random.randint(constants.low_output_price,constants.high_output_price+1,size=constants.num_rounds)
-    return output_prices.astype(float) 
-
+# TODO: Any reason to keep this?
 def generate_costs(num_low, num_high, low_min, low_max, high_min, high_max):
 	random.seed(111)
 
