@@ -1,9 +1,9 @@
-from otree.api import Currency as c, currency_range
-from ._builtin import Page, WaitPage
-from .models import Bid, Constants, Player
 import numpy as np
 import pandas as pd
-from django.db.models import Count, Min, Sum, Avg
+from otree.api import Currency as c
+from ._builtin import Page, WaitPage
+from .models import Bid, Constants, Player
+from django.db.models import Sum
 from .helper_functions import make_initial_rounds_table
 from django.forms import modelformset_factory
 
@@ -39,19 +39,19 @@ class Signin(Page):
                 player.permits = old_player.permits
                 player.first_name = old_player.first_name
                 player.last_name = old_player.last_name
-                player_computing_ID = old_player.computing_ID
+                player.computing_ID = old_player.computing_ID
 
         return self.round_number == 1
 
 
 class SigninWaitPage(WaitPage):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'])
+        return self.round_number == 1 and self.session.config['show_instructions']
 
 
 class Instructions1(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'])
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
@@ -69,7 +69,7 @@ class Instructions1(Page):
 
 class Instructions2(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'])
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         if self.player.role() == 'high_emitter':
@@ -86,7 +86,7 @@ class Instructions2(Page):
 
 class Instructions3(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'])
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         output_price = self.subsession.output_price
@@ -117,7 +117,7 @@ class Instructions3(Page):
 
 class Instructions4(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'])
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         if self.player.role() == 'high_emitter':
@@ -146,12 +146,12 @@ class Auction(Page):
         # list of (cost, expected value) for each plant
         costs = self.player.get_costs()
         cost_list = [
-                (
-                    cost,
-                    output_price - cost,
-                    (output_price - cost) / self.player.emission_intensity,
-                    output_price
-                ) for cost in costs
+            (
+                cost,
+                output_price - cost,
+                (output_price - cost) / self.player.emission_intensity,
+                output_price
+            ) for cost in costs
         ]
 
         # get bids for this player
@@ -357,9 +357,13 @@ class Production(Page):
 
     def vars_for_template(self):
         # List of (cost, expected value) pairs
-        cost_list = [(cost,
-                    self.subsession.output_price - cost,
-                    (self.subsession.output_price - cost)/self.player.emission_intensity) for cost in self.player.get_costs()]
+        cost_list = [
+            (
+                cost,
+                self.subsession.output_price - cost,
+                (self.subsession.output_price - cost) / self.player.emission_intensity
+            ) for cost in self.player.get_costs()
+        ]
         return {'cost_list': cost_list}
 
     def before_next_page(self):
