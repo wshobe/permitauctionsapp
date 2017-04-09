@@ -31,11 +31,16 @@
 	<h3>Auction results:</h3>
 	
 	<p> The auction closing price for this period was {{subsession.auction_price}}.</p>
-	<p> A total of {{subsession.number_sold_auction}} of the {{ permits_available }} available in the auction were sold.
+	<p> A total of {{subsession.number_sold_auction}} permit{%if subsession.number_sold_auction > 1 %}s{% endif %} were sold in the auction.
 	{% if ecr_removed > 0 %}
 		<p> Due to the low bids for permits in the auction, <em>{{ecr_removed}} 
-			permit{%if ecr_removed > 1 %}s{% endif %} 
-			were retired from the auction before the closing price was calculated.</em> </p>
+			{%if ecr_removed > 1 %}permits were {% else %}permit was{% endif %} 
+			 retired from the auction before the closing price was calculated.</em> </p>
+	{% endif %}
+	{% if pcr_added > 0 %}
+		<p> Due to the high bids for permits in the auction, <em>{{pcr_added}} 
+			permit{%if pcr_added > 1 %}s{% endif %} 
+			were added to the auction amount before the closing price was calculated.</em> </p>
 	{% endif %}
 	<h4>Your bids:</h4>
 	{% if num_bids == 0 %}

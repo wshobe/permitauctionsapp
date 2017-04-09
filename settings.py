@@ -92,16 +92,16 @@ SESSION_CONFIGS = [
     'random_seed': 113,
     'output_price_random_seed': 1288,
     'show_instructions': True,
-    'last_round': 10,
+    'last_round': 3,
     'debug': DEBUG,
-    'low_emitter_min_cost': 9,
+    'low_emitter_min_cost': 8,
     'low_emitter_max_cost': 15,
     'high_emitter_min_cost': 4,
     'high_emitter_max_cost': 9,
     'low_output_price': 21,
     'high_output_price_increment': 8,  
     'price_containment_trigger': 12,
-    'price_containment_reserve_amount': 8  # Max permits to add if price over containment trigger
+    'price_containment_reserve_amount': 6  # Max permits to add if price over containment trigger
 
     #     'name': '...',
     #     'display_name': '...',

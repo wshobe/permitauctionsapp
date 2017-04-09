@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from django.db.models import Count, Min, Sum, Avg
 from .generate_random_costs import costs1, assign_costs, generate_output_prices
-from .helper_functions import make_initial_rounds_table
+from .helper_functions import make_initial_rounds_table,make_supply_schedule,calculate_auction_price
 from django.forms import modelformset_factory
 
 def vars_for_all_templates(self):
@@ -263,51 +263,58 @@ class AuctionWaitPage(WaitPage):
         bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id','bid','accepted','player_id','pid_in_group')))
         num_bids = len(bids_df)
         self.subsession.ecr_reserve_amount_used = 0
+        # Retreive the allowance supply curve
+        supply = make_supply_schedule(self.subsession,Constants)
         # Get a preliminary auction price, then check for price collar conditions
-        auction_price = second_price_auction(permits_available,num_bids, bids_df)
+        auction_close = calculate_auction_price(bids_df,supply,self.subsession,Constants)
+        auction_price = auction_close['price']
+        first_rejected_bid = auction_close['first_rejected_bid']
         self.subsession.initial_auction_price = auction_price
-        starting_ecr_reserve = self.session.config['initial_ecr_reserve_amount']
         pcr_trigger = self.session.config['price_containment_trigger']
         pcr_available = self.session.config['price_containment_reserve_amount']
-        # If the initial price is below the ecr_trigger, remove some allowances from the ecr.
-        if auction_price < Constants.ecr_trigger_price:
-            diff = Constants.ecr_trigger_price - auction_price
-            # Just division, not floor division
-            removed = min(round(diff * Constants.reserve_increment), starting_ecr_reserve)
+        initial_ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
+        # If the initial price is above the upper limit, release some of the pcr
+        if auction_price > pcr_trigger:
+            #assert False, "auction_price > pcr_trigger"
+            pcr_added = 0
+            while (auction_price > pcr_trigger and pcr_added < pcr_available):
+                bid_index = permits_available + pcr_added
+                if bid_index >= len(bids_df):
+                    auction_price = pcr_trigger
+                else:
+                    auction_price = bids_df.bid[bid_index]
+                pcr_added += 1
+            self.subsession.pcr_amount_added = pcr_added
+            permits_available = permits_available + pcr_added
+        # Price is at the reserve price then all ecr has been removed
+        elif auction_price == Constants.reserve_price:
+            self.subsession.ecr_reserve_amount_used = initial_ecr_reserve_amount
+            permits_available = permits_available - initial_ecr_reserve_amount
+        # If the initial price is below the ecr_trigger but above the reserve, 
+        #      remove some allowances from the ecr.
+        elif auction_price < Constants.ecr_trigger_price:
+            supply_equals_bid = any(np.nonzero(supply == auction_price))
+            if supply_equals_bid:
+                removed = permits_available - np.nonzero(supply == auction_price)[0][0] - 1
+            else:
+                removed = permits_available - np.nonzero(supply > auction_price)[0][0] - 2
             self.subsession.ecr_reserve_amount_used = removed
             permits_available = permits_available - removed
-            auction_price = second_price_auction(permits_available,num_bids, bids_df)
-        # If the initial price is above the upper limit, release some of the pcr
-        elif auction_price > pcr_trigger:
-            #assert False, "auction_price > pcr_trigger"
-            if bids_df.bid[permits_available - 1 + pcr_available] > pcr_trigger:
-                self.subsession.pcr_amount_added = pcr_available
-                permits_available = permits_available + pcr_available
-            else:
-                pcr_added = 0
-                while auction_price > pcr_trigger:
-                    pcr_added += 1
-                    if bids_df.bid[permits_available - 1 + pcr_added] == pcr_trigger:
-                        break
-                auction_price = pcr_trigger
-                self.subsession.pcr_amount_added = pcr_added
-                permits_available = permits_available + pcr_added
-        # This is my final offer!
-        self.subsession.auction_price = auction_price
         # Now, assign permits to players by marking bids in bids_df as accepted
+        self.subsession.auction_price = auction_price
         bids_df.accepted = 0  # Only bids at or above the reserve are included in bids_df
         # If the world is awash in permits...
         if permits_available >= len(bids_df):
             bids_df.accepted = 1
         # If the auction closes normally with no ties
         elif auction_price > bids_df.bid.iloc[permits_available]:
-            bids_df.accepted[bids_df.bid > auction_price] = 1
+            bids_df.accepted[bids_df.bid > first_rejected_bid] = 1
         # Take care of ties
         else:
-            bids_df.accepted[bids_df.bid > auction_price] = 1
-            temp_accepted = int(bids_df.sum()['accepted'])
+            bids_df.accepted[bids_df.bid > first_rejected_bid] = 1
+            temp_accepted = int(bids_df.accepted.sum())   # int(bids_df.sum()['accepted'])
             remaining = permits_available - temp_accepted
-            count = len(bids_df[bids_df.bid==auction_price])
+            count = len(bids_df[bids_df.bid==first_rejected_bid])
             rnd = np.random.permutation(count)
             grab = bids_df.index[bids_df.bid==auction_price].take(rnd)[:remaining]
             bids_df.accepted.loc[grab] = 1
@@ -317,13 +324,18 @@ class AuctionWaitPage(WaitPage):
             bid_record.save()
         # Calculate the total purchases for each player and save to the player record
         self.subsession.number_sold_auction = bids_df.accepted.sum()
+        #purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
         purchased = bids_df.groupby('pid_in_group',as_index=False).sum()
         for index,accepted in zip(purchased.pid_in_group,purchased.accepted):
             player = self.group.get_player_by_id(index)
-            player.permits_purchased_auction = accepted
-            player.permits = player.permits + accepted
-            player.money = player.money - c(float(auction_price)*accepted)
-    
+            purchased_at_auction = 0 if accepted is None else accepted
+            player.permits_purchased_auction = purchased_at_auction
+            player.permits = player.permits + purchased_at_auction
+            player.money = player.money - c(float(auction_price)*purchased_at_auction)
+        for player in self.subsession.get_players():
+            purchased = 0 if player.permits_purchased_auction is None else player.permits_purchased_auction
+            player.permits_purchased_auction = purchased
+        
     def vars_for_template(self):
         bid_qs = [(dec.pk, dec.bid) for dec in self.player.bid_set.all()]
         return {'bid_list': bid_qs}
@@ -335,11 +347,14 @@ class AuctionResults(Page):
         permits_available = self.subsession.permits_available
         auction_price = self.subsession.auction_price
         ecr_removed = self.subsession.ecr_reserve_amount_used
+        pcr_added = self.subsession.pcr_amount_added
         # Retrieve only this player's bids
         player_id = self.player.id
         bids = self.player.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid','accepted')
         num_bids = len(bids)
         num_successful_bids = bids.aggregate(total_won = Sum('accepted'))['total_won']
+        num_successful_bids = 0 if num_successful_bids is None else num_successful_bids
+        #assert False,"num_bids {:f}".format(num_bids)
         no_bids_accepted = True if num_successful_bids == 0 else False
         no_bids_rejected = True if (num_bids == 0 or num_bids == num_successful_bids) else False
         return {
@@ -354,6 +369,7 @@ class AuctionResults(Page):
             'no_bids_accepted': no_bids_accepted,
             'no_bids_rejected': no_bids_rejected,
             'ecr_removed': ecr_removed,
+            'pcr_added': pcr_added,
             'auction_price': auction_price,
             'total_spent': auction_price*num_successful_bids,
             'pool_change': pool_change  #,
@@ -362,16 +378,6 @@ class AuctionResults(Page):
 class Production(Page):
     form_model = models.Player
     form_fields = ['production_amount']
-
-# It doesn't look like this function is used.
-    """def production_amount_choices(self):
-        # range(1,0) returns an empty list. 'base' forces the minimum choice of 1
-        # This does not allow a player to over-produce. Probably needs to be changed.
-        base = [1]
-        if self.player.role() == 'high_emitter':
-            return base + list(range(2, min((self.player.permits // 2) + 1, Constants.production_capacity_high + 1)))
-        elif self.player.role() == 'low_emitter':
-            return base + list(range(2, min(self.player.permits + 1, Constants.production_capacity_low + 1)))"""
 
     def vars_for_template(self):
         # List of (cost, expected value) pairs
@@ -399,19 +405,18 @@ class Production(Page):
             self.player.permits = self.player.permits - permits_required
             self.player.penalty = 0
 
-
 class RoundResults(Page):
     def vars_for_template(self):
+        permits_purchased = 0 if self.player.permits_purchased_auction is None else self.player.permits_purchased_auction
         return {
             'permits_used': self.player.emission_intensity * self.player.production_amount,
-            'spent_auction': self.player.permits_purchased_auction * self.subsession.auction_price,
+            'spent_auction': permits_purchased * self.subsession.auction_price,
             'earnings': self.player.production_amount*self.subsession.output_price
         }
 
-
 class FinalResults(Page):
     def is_displayed(self):
-        return (self.round_number == self.session.config['last_round'] | self.round_number == Constants.num_rounds)
+        return (self.round_number >= self.session.config['last_round'] or self.round_number >= Constants.num_rounds)
 
     def vars_for_template(self):
         return {

@@ -11,7 +11,7 @@
 		<tr><td style="width: 50%;text-align: left;">
     		<p></p>
 			<p>You purchased {{ player.permits_purchased_auction }} 
-				permit{%if player.permits_purchased_auction > 1 %}s{% endif %} in the auction for {{ spent_auction }}.  
+				permit{%if player.permits_purchased_auction > 1  %}s{% endif %} in the auction for {{ spent_auction }}.  
 			</p>
 			<p>You ran {{ player.production_amount }} plant{%if player.production_amount != 1 %}s{% endif %} 
 				and used {{permits_used}}
@@ -43,6 +43,7 @@
 
 
     {% next_button %}
+
 {% endblock %}
 
 {% block styles %}
