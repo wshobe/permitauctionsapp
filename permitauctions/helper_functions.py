@@ -1,4 +1,3 @@
-#import numpy as np
 import pandas as pd
 import numpy as np
 from otree.api import Currency as c
@@ -12,14 +11,19 @@ def make_initial_rounds_table(session,constants):
     round_numbers = list(range(1,num_rounds+1))
     period_caps = [session.config['initial_cap'] - (round-1)*session.config['cap_decrement'] for round in round_numbers]
     output_prices = session.vars['output_prices'][:num_rounds]     # In currency
-    full_capacity_permit_demand = [(constants.production_capacity_high*constants.emission_intensity_high*num_high_emitters) + 
-                                (constants.production_capacity_low*constants.emission_intensity_low*num_low_emitters)]*num_rounds
-    table_data = pd.DataFrame({'round_numbers':round_numbers,
-                        'period_caps':period_caps,
-                        'output_prices':output_prices,
-                        'full_capacity_permit_demand':full_capacity_permit_demand},
-                        index=round_numbers,
-                        columns=['round_numbers','period_caps','output_prices','full_capacity_permit_demand'])
+    max_low_emitter_demand = constants.production_capacity_low * constants.emission_intensity_low * session.config['num_low_emitters']
+    max_high_emitter_demand = constants.production_capacity_high * constants.emission_intensity_high * session.config['num_high_emitters']
+    full_capacity_permit_demand = [max_low_emitter_demand + max_high_emitter_demand] * num_rounds
+    table_data = pd.DataFrame(
+        {
+            'round_numbers':round_numbers,
+            'period_caps':period_caps,
+            'output_prices':output_prices,
+            'full_capacity_permit_demand':full_capacity_permit_demand
+        },
+        index=round_numbers,
+        columns=['round_numbers','period_caps','output_prices','full_capacity_permit_demand']
+        )
     return table_data
 
 def make_supply_schedule(subsession,constants):
@@ -33,7 +37,7 @@ def make_supply_schedule(subsession,constants):
                         num_high_emitters*constants.num_bids_high*emission_intensity_high
     ecr_increment = constants.reserve_increment
     ecr_price_increment = 1/ecr_increment
-    ecr_trigger_price = constants.ecr_trigger_price
+    ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     permits_available = subsession.permits_available
     reserve_price = constants.reserve_price
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
@@ -52,7 +56,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
     diff = bids - supply
     first_rejected_bid = -1
     ecr_increment = constants.reserve_increment
-    ecr_trigger_price = constants.ecr_trigger_price
+    ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
     reserve_price = constants.reserve_price
     permits_available = subsession.permits_available

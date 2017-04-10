@@ -5,17 +5,17 @@
 {% endblock %}
 {% block content %}
     {{ body_text }}
-	
-	<h3>Please wait.</h3> 
+
+	<h3>Please wait.</h3>
 	<h4>The screen will automatically refresh when all players have submitted their bids.<h4>
 	<hr />
 	<br /><br /><p style="font-size: 12pt;">Current output price: {{ output_price }}</p>
-	
+
 	<h4> Your bids:</h4>
 	<p>
-    {% for id,bid in bid_list %}
-    {% if forloop.counter > 1 %},&nbsp&nbsp{%endif%}{{ bid }}
+    {% for id, bid in bid_list %}
+    {% if forloop.counter > 1 %},&nbsp;&nbsp;{%endif%}{{ bid }}
     {% endfor %}
     </p>
-	
+
 {% endblock %}

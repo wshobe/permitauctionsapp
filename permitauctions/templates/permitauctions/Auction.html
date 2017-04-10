@@ -34,7 +34,7 @@
 	    		<ul>
 				<li>There are {{session.config.price_containment_reserve_amount}} permits to be made available if the auction price 
 					would close above {{session.config.price_containment_trigger}}.</li>
-				<li>If the auction price would close below {{Constants.ecr_trigger_price}}, 
+				<li>If the auction price would close below {{session.config.ecr_trigger_price}}, 
 					then up to {{session.config.initial_ecr_reserve_amount}} permits may be retired.</li>
 			</td></tr></table>
 			</ul>
@@ -65,7 +65,7 @@
 				{% endif %}</th>
 		</tr>
 
-        {% for field,plant in bid_table %}
+        {% for field, plant in bid_table %}
 
         <tr><td style=" padding: 10px; text-align: center;">{{ forloop.counter }}</td>
 			<td style=" padding: 10px; text-align: center;">{{ plant.3 }}</td>
