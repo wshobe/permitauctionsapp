@@ -69,7 +69,6 @@ class Subsession(BaseSubsession):
             self.session.vars['costs1'] = costs1(self.session,Constants)
             self.session.vars['output_prices'] = generate_output_prices(self.session,Constants)
         #all_costs = self.session.vars['costs1']
-        costs = assign_costs(player,all_costs['high_emitters'],player_index)
         self.output_price = self.session.vars['output_prices'][self.round_number - 1]
         for player in self.get_players():
             if self.round_number == 1:
@@ -82,11 +81,13 @@ class Subsession(BaseSubsession):
                 player.emission_intensity = Constants.emission_intensity_high
                 # TODO: Is this doing what you think it is
                 player_index = (self.round_number - 1) * num_high_emitters + player.id_in_group - num_low_emitters - 1
+                costs = assign_costs(player,all_costs['high_emitters'],player_index)
             elif player.role() == 'low_emitter':
                 player.money = Constants.initial_cash_endowment_low
                 player.capacity = Constants.production_capacity_low
                 player.emission_intensity = Constants.emission_intensity_low
                 player_index = (self.round_number - 1) * num_low_emitters + player.id_in_group - 1
+                costs = assign_costs(player,all_costs['low_emitters'],player_index)
             player.generate_bid_stubs()
             player.generate_unit_stubs(costs)
             # Costs need to be sorted by player
