@@ -79,16 +79,15 @@ class Subsession(BaseSubsession):
                 player.money = Constants.initial_cash_endowment_high
                 player.capacity = Constants.production_capacity_high
                 player.emission_intensity = Constants.emission_intensity_high
-                player_index = (self.round_number-1)*num_high_emitters + player.id_in_group-num_low_emitters - 1
-                costs = assign_costs(player,all_costs['high_emitters'],player_index)
+                # TODO: Is this doing what you think it is
+                player_index = (self.round_number - 1) * num_high_emitters + player.id_in_group - num_low_emitters - 1
             elif player.role() == 'low_emitter':
                 player.money = Constants.initial_cash_endowment_low
                 player.capacity = Constants.production_capacity_low
                 player.emission_intensity = Constants.emission_intensity_low
-                player_index = (self.round_number-1)*num_low_emitters + player.id_in_group - 1
-                costs = assign_costs(player,all_costs['low_emitters'],player_index)
+                player_index = (self.round_number - 1) * num_low_emitters + player.id_in_group - 1
             player.generate_bid_stubs()
-            player.generate_unit_stubs(costs)
+            player.generate_unit_stubs(self.session.vars['costs'][player.role()][player_index])
 
 class Group(BaseGroup):
     pass
@@ -133,19 +132,19 @@ class Player(BasePlayer):
         else:
             num_bids = Constants.num_bids_low
         for _ in range(num_bids):
-            bid = self.bid_set.create()    # create a new bid object as part of the player's bid set
-            bid.round = self.subsession.round_number
+            bid = self.bid_set.create() # create a new bid object as part of the player's bid set
+            bid.round_num = self.subsession.round_number
             bid.pid_in_group = self.id_in_group
             bid.save()   # important: save to DB!
             if self.role() == 'high_emitter':
-                bid2 = self.bid_set.create()    # create a second bid object for high emitters
-                bid2.round = self.subsession.round_number
-                bid2.pid_in_group = self.id_in_group   
+                bid2 = self.bid_set.create() # Double the bids for high emitters
+                bid2.round_num = self.subsession.round_number
+                bid2.pid_in_group = self.id_in_group
                 bid2.save()
 
     def generate_unit_stubs(self, player_costs):
         """
-        Create a fixed number of "unit stubs".
+        Create a fixed number of production unit stubs.
         """
         player_costs = sorted(player_costs)
         if self.role() == 'high_emitter':
@@ -153,21 +152,23 @@ class Player(BasePlayer):
         else:
             capacity = Constants.production_capacity_low
         for i in range(capacity):
-            unit = self.unit_set.create()    # add new production unit to set
+            unit = self.unit_set.create() # add new production unit to set
             unit.unit_num = i
             unit.cost = player_costs[i]
-            unit.save()   # important: save to DB!
+            unit.save() # important: save to DB!
 
-class Bid(Model):   # inherits from Django's base class "Model"
+
+class Bid(Model):  # inherits from Django's base "Model"
     BID_CHOICES = currency_range(c(Constants.reserve_price), c(Constants.maximum_bid), c(Constants.bid_price_increment))
-    round = models.PositiveIntegerField()
+    round_num = models.PositiveIntegerField()
     bid = models.CurrencyField(choices=BID_CHOICES)
     accepted = models.PositiveIntegerField()
     pid_in_group = models.PositiveIntegerField()
     player = ForeignKey(Player)    # creates 1:m relation -> this bid was made by a certain player
 
-class Unit(Model):   # inherits from Django's base class "Model"
+
+class Unit(Model):  # inherits from Django's base "Model"
     unit_num = models.IntegerField()
     cost = models.CurrencyField()
     unit_used = models.PositiveIntegerField()
-    player = ForeignKey(Player)    # creates 1:m relation -> this bid was made by a certain player
+    player = ForeignKey(Player)  # creates 1:m relation -> this bid was made by a certain player

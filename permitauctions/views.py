@@ -41,21 +41,22 @@ class Signin(Page):
                 player.permits = old_player.permits
                 player.first_name = old_player.first_name
                 player.last_name = old_player.last_name
-                player_computing_ID = old_player.computing_ID
+                player.computing_ID = old_player.computing_ID
 
-        return self.round_number == 1 
+        return self.round_number == 1
 
 
 class SigninWaitPage(WaitPage):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'] == True)
+        return self.round_number == 1 and self.session.config['show_instructions']
 
 
 class Instructions1(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'] == True)
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
+        #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
         if self.player.role() == 'high_emitter':
             player_type = "high"
             num_bids = Constants.num_bids_high
@@ -70,7 +71,7 @@ class Instructions1(Page):
 
 class Instructions2(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'])
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         if self.player.role() == 'high_emitter':
@@ -83,11 +84,11 @@ class Instructions2(Page):
             'player_type': player_type,
             'num_bids': num_bids,
             'initial_cash_endowment': self.player.money
-            }
+        }
 
 class Instructions3(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'] == True)
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         output_price = self.subsession.output_price
@@ -108,7 +109,8 @@ class Instructions3(Page):
             num_bids = Constants.num_bids_low
         return {
             'cost_list': cost_list,
-            'max_bid_dollar_value': self.player.money + (self.player.capacity*output_price),
+            # TODO: Why have this limit at all, if the players aren't expected to misplay
+            'max_bid_dollar_value': self.player.money + (self.player.capacity * output_price),
             'player_type': player_type,
             'num_bids': num_bids,
             'initial_cash_endowment': self.player.money
@@ -116,7 +118,7 @@ class Instructions3(Page):
 
 class Instructions4(Page):
     def is_displayed(self):
-        return (self.round_number == 1 and self.session.config['show_instructions'] == True)
+        return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
         if self.player.role() == 'high_emitter':
@@ -128,11 +130,10 @@ class Instructions4(Page):
         table_data = make_initial_rounds_table(self.session, Constants)
         table_data.output_prices = table_data.output_prices.astype(int)
         return {
-            'num_rounds':Constants.num_rounds,
+            'num_rounds': Constants.num_rounds,
             'player_type': player_type,
             'num_bids': num_bids,
-            'table_data':table_data,
-            'output_prices':table_data.output_prices[:self.subsession.round_number],
+            'table_data': table_data,
             'initial_cash_endowment': self.player.money
         }
 
@@ -142,32 +143,34 @@ BidFormSet = modelformset_factory(Bid, fields=("bid",), extra=0)
 class Auction(Page):
     def vars_for_template(self):
         output_price = self.subsession.output_price
+
         # list of (cost, expected value) for each plant
         costs = self.player.get_costs()
         cost_list = [
-                (
-                    cost,
-                    output_price - cost,
-                    (output_price - cost)/self.player.emission_intensity,
-                    output_price
-                ) for cost in costs
+            (
+                cost,
+                output_price - cost,
+                (output_price - cost) / self.player.emission_intensity,
+                output_price
+            ) for cost in costs
         ]
+
         # get bids for this player
         bid_qs = self.player.bid_set.all()
         #assert len(bid_qs) == Constants.num_bids_per_round
 
         bids_formset = BidFormSet(queryset=bid_qs)
         bid_fields = [field for field in [form for form in bids_formset]]
-        table_data = make_initial_rounds_table(self.session,Constants)
+        table_data = make_initial_rounds_table(self.session, Constants)
         output_prices = table_data.output_prices.astype(int)[:self.subsession.round_number]
         total_net_value = sum([output_price - cost for cost in costs])
         #assert False, "permit value {:f}".format(test)
         return {
             'bid_formset': bids_formset,
             'table_data': table_data,
-            'output_prices':output_prices,
+            'output_prices': output_prices,
             'cost_list': cost_list,
-            'bid_table': zip(bid_fields,cost_list),
+            'bid_table': zip(bid_fields, cost_list),
             'max_bid_dollar_value': self.player.money + total_net_value
         }
 
@@ -190,7 +193,8 @@ class Auction(Page):
             # double the bids for high emitters
             for j in range(self.player.emission_intensity):
                 # lookup by ID and save submitted data
-                bid_row = bid_objs_by_id[dec_id + (j*num_bids)]
+                # TODO: i * num_bids + j so bids are next to each other instead of interleaved?
+                bid_row = bid_objs_by_id[dec_id + (j * num_bids)]
                 if bid_submitted != '':
                     bid_row.bid = bid_submitted
                 else:
@@ -223,11 +227,11 @@ def second_price_auction(num_permits, num_bids, bids):
 class AuctionWaitPage(WaitPage):
     title_text = "Please wait"
     """
-    Almost all of this work is done in memory in a dataframe. This is much faster and less reliant on 
-    very fast data connections. 
+    Almost all of this work is done in memory in a dataframe. This is much faster and less reliant on very fast data connections.
     """
     def after_all_players_arrive(self):
         permits_available = self.subsession.permits_available
+
         # Get all bid records for all players in this round and put the records in a dataframe
         bid_qs = Bid.objects.filter(player__session_id=self.session.id).filter(round=self.subsession.round_number).filter(bid__isnull=False)
         bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id', 'bid', 'accepted', 'player_id', 'pid_in_group')))
@@ -319,18 +323,16 @@ class AuctionResults(Page):
         pcr_added = self.subsession.pcr_amount_added
         # Retrieve only this player's bids
         player_id = self.player.id
-        bids = self.player.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid','accepted')
+        bids = self.player.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid', 'accepted')
 
         num_bids = len(bids)
-        num_successful_bids = bids.aggregate(total_won = Sum('accepted'))['total_won']
-        num_successful_bids = 0 if num_successful_bids is None else num_successful_bids
-        #assert False,"num_bids {:f}".format(num_bids)
+        num_successful_bids = bids.aggregate(total_won=Sum('accepted'))['total_won']
         no_bids_accepted = (num_successful_bids == 0)
         no_bids_rejected = (num_bids == 0 or num_bids == num_successful_bids)
         return {
             'player_name': self.player.first_name,
             'player_id': player_id,
-            'bids': [(index, bid['accepted'],bid['bid']) for index,bid in enumerate(bids)],
+            'bids': [(index, bid['accepted'], bid['bid']) for index, bid in enumerate(bids)],
             'permits_available': permits_available,
             'this_player_bought': self.player.permits_purchased_auction,
             'how_many_accepted': num_successful_bids,
@@ -350,9 +352,13 @@ class Production(Page):
 
     def vars_for_template(self):
         # List of (cost, expected value) pairs
-        cost_list = [(cost,
-                    self.subsession.output_price - cost,
-                    (self.subsession.output_price - cost)/self.player.emission_intensity) for cost in self.player.get_costs()]
+        cost_list = [
+            (
+                cost,
+                self.subsession.output_price - cost,
+                (self.subsession.output_price - cost) / self.player.emission_intensity
+            ) for cost in self.player.get_costs()
+        ]
         return {'cost_list': cost_list}
 
     def before_next_page(self):
@@ -373,6 +379,7 @@ class Production(Page):
         else:
             self.player.permits = self.player.permits - permits_required
             self.player.penalty = 0
+
 
 class RoundResults(Page):
     def vars_for_template(self):
