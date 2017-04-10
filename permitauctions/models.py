@@ -68,7 +68,7 @@ class Subsession(BaseSubsession):
             """
             self.session.vars['costs1'] = costs1(self.session,Constants)
             self.session.vars['output_prices'] = generate_output_prices(self.session,Constants)
-        #all_costs = self.session.vars['costs1']
+        all_costs = self.session.vars['costs1']
         self.output_price = self.session.vars['output_prices'][self.round_number - 1]
         for player in self.get_players():
             if self.round_number == 1:
