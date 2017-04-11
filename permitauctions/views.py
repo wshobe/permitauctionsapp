@@ -390,9 +390,6 @@ class FinalResults(Page):
             'payout': self.player.money * Constants.payout_rate
         }
 
-def test_view(request):
-    return HttpResponse('This is a custom view')
-
 
 page_sequence = [
     Signin,
