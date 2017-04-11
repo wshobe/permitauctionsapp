@@ -15,7 +15,6 @@ def vars_for_all_templates(self):
     permits_available = self.subsession.permits_available
     num_participants = self.session.config['num_high_emitters'] + self.session.config['num_low_emitters']
     ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']  # compliance reserve
-    debug = self.session.config['debug']
     output_price = c(self.subsession.output_price)
     high_output_price = self.session.config['low_output_price'] + self.session.config['high_output_price_increment']
     table_data = make_rounds_table(self.session, Constants, self.subsession)
@@ -27,7 +26,6 @@ def vars_for_all_templates(self):
         'num_participants': num_participants,
         'table_data': table_data,
         'rounds':list(range(self.session.config['last_round'])),
-        'debug': debug
     }
 
 class Signin(Page):
@@ -59,7 +57,6 @@ class Instructions1(Page):
         return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
-        #player_type = "high" if self.player.emission_intensity == Constants.emission_intensity_high else "low"
         if self.player.role() == 'high_emitter':
             player_type = "high"
             num_bids = Constants.num_bids_high

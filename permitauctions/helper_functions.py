@@ -29,7 +29,6 @@ def make_rounds_table(session,constants, subsession):
         )
     table_data.output_prices[this_round:num_rounds] = None
     table_data.auction_prices[this_round:num_rounds] = None
-    #assert False
     return table_data
 
 def make_supply_schedule(subsession,constants):

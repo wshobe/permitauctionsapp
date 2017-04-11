@@ -15,12 +15,13 @@ if environ.get('OTREE_PRODUCTION') not in {None, '', '0'}:
     DEBUG = False
 else:
     DEBUG = True
-
+#OTREE_PRODUCTION = 1
+#DEBUG = False
 ADMIN_USERNAME = 'admin'
 
 # for security, best to set admin password in an environment variable
 ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
-
+#ADMIN_PASSWORD = 'rggi-ecr'
 # don't share this with anybody.
 SECRET_KEY = 'l)2(&wh@^_l9@e04v20f#ne-*hw_z!94dz(igf$_m^ifu3g4mp'
 
@@ -46,7 +47,7 @@ DATABASES = {
 # the full admin interface.
 
 AUTH_LEVEL = environ.get('OTREE_AUTH_LEVEL')
-
+AUTH_LEVEL = 'STUDY'
 # setting for integration with AWS Mturk
 AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
@@ -68,16 +69,16 @@ DEMO_PAGE_INTRO_TEXT = """
 oTree: Permit Experiments
 """
 
-ROOM_DEFAULTS = {}
+#ROOM_DEFAULTS = {}
 
-ROOMS = [
-    {
-        'name': 'Permit_Auctions',
-        'display_name': 'Permit Markets',
-        'participant_label_file': '/Users/wms5f/Programming/permitauctionapp/Permit_Auctions.txt',
-        'use_secure_urls': True,
-    },
-]
+#ROOMS = [
+#    {
+#        'name': 'Permit_Auctions',
+#        'display_name': 'Permit Markets',
+#        'participant_label_file': '/Users/wms5f/Programming/permitauctionapp/Permit_Auctions.txt',
+#        'use_secure_urls': True,
+#    },
+#]
 
 
 
@@ -106,7 +107,6 @@ SESSION_CONFIGS = [
     'output_price_random_seed': 1288,
     'show_instructions': False,
     'last_round': 3,
-    'debug': DEBUG,
     'low_emitter_min_cost': 8,
     'low_emitter_max_cost': 15,
     'high_emitter_min_cost': 4,
