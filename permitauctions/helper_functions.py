@@ -2,28 +2,34 @@ import pandas as pd
 import numpy as np
 from otree.api import Currency as c
 
-def make_initial_rounds_table(session,constants):
+def make_rounds_table(session,constants, subsession):
     '''Create the data structure that is used to construct the running table of round information:
     round numbers, cap for each round, aggregate production capacity, output_price, auction price, ecr_used'''
     num_rounds = session.config['last_round']
+    this_round = subsession.round_number
     num_low_emitters = session.config['num_low_emitters']
     num_high_emitters = session.config['num_high_emitters']
     round_numbers = list(range(1,num_rounds+1))
     period_caps = [session.config['initial_cap'] - (round-1)*session.config['cap_decrement'] for round in round_numbers]
-    output_prices = session.vars['output_prices'][:num_rounds]     # In currency
+    output_prices = list(map(c,session.vars['output_prices']))[:subsession.round_number]     # In currency
+    auction_prices = [s.auction_price for s in subsession.in_all_rounds()][:subsession.round_number]
     max_low_emitter_demand = constants.production_capacity_low * constants.emission_intensity_low * session.config['num_low_emitters']
     max_high_emitter_demand = constants.production_capacity_high * constants.emission_intensity_high * session.config['num_high_emitters']
     full_capacity_permit_demand = [max_low_emitter_demand + max_high_emitter_demand] * num_rounds
     table_data = pd.DataFrame(
         {
-            'round_numbers':round_numbers,
-            'period_caps':period_caps,
-            'output_prices':output_prices,
-            'full_capacity_permit_demand':full_capacity_permit_demand
+            'round_numbers': round_numbers,
+            'period_caps': period_caps,
+            'output_prices': output_prices,
+            'auction_prices': auction_prices,
+            'full_capacity_permit_demand': full_capacity_permit_demand
         },
         index=round_numbers,
-        columns=['round_numbers','period_caps','output_prices','full_capacity_permit_demand']
+        columns=['round_numbers','period_caps','output_prices','auction_prices','full_capacity_permit_demand']
         )
+    table_data.output_prices[this_round:num_rounds] = None
+    table_data.auction_prices[this_round:num_rounds] = None
+    #assert False
     return table_data
 
 def make_supply_schedule(subsession,constants):

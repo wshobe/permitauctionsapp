@@ -6,22 +6,26 @@ import numpy as np
 import pandas as pd
 from django.db.models import Count, Min, Sum, Avg
 from .generate_random_costs import costs1, assign_costs, generate_output_prices
-from .helper_functions import make_initial_rounds_table,make_supply_schedule,calculate_auction_price
+from .helper_functions import make_rounds_table,make_supply_schedule,calculate_auction_price
 from django.forms import modelformset_factory
+from django.http import HttpResponse
 
 def vars_for_all_templates(self):
+    round_number = self.subsession.round_number
     permits_available = self.subsession.permits_available
     num_participants = self.session.config['num_high_emitters'] + self.session.config['num_low_emitters']
     ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']  # compliance reserve
     debug = self.session.config['debug']
-    output_price = self.subsession.output_price
+    output_price = c(self.subsession.output_price)
     high_output_price = self.session.config['low_output_price'] + self.session.config['high_output_price_increment']
+    table_data = make_rounds_table(self.session, Constants, self.subsession)
     return {
         'permits_available': permits_available,
         'ecr_reserve_amount': ecr_reserve_amount,
         'output_price': output_price,
         'high_output_price': high_output_price,
         'num_participants': num_participants,
+        'table_data': table_data,
         'rounds':list(range(self.session.config['last_round'])),
         'debug': debug
     }
@@ -44,7 +48,6 @@ class Signin(Page):
                 player.computing_ID = old_player.computing_ID
 
         return self.round_number == 1
-
 
 class SigninWaitPage(WaitPage):
     def is_displayed(self):
@@ -91,7 +94,7 @@ class Instructions3(Page):
         return self.round_number == 1 and self.session.config['show_instructions']
 
     def vars_for_template(self):
-        output_price = self.subsession.output_price
+        output_price = c(self.subsession.output_price)
         # list of (cost, expected value) for each plant
         cost_list = [
                 (   
@@ -127,13 +130,10 @@ class Instructions4(Page):
         else:
             player_type = "low"
             num_bids = Constants.num_bids_low
-        table_data = make_initial_rounds_table(self.session, Constants)
-        table_data.output_prices = table_data.output_prices.astype(int)
         return {
             'num_rounds': Constants.num_rounds,
             'player_type': player_type,
             'num_bids': num_bids,
-            'table_data': table_data,
             'initial_cash_endowment': self.player.money
         }
 
@@ -143,7 +143,6 @@ BidFormSet = modelformset_factory(Bid, fields=("bid",), extra=0)
 class Auction(Page):
     def vars_for_template(self):
         output_price = self.subsession.output_price
-
         # list of (cost, expected value) for each plant
         costs = self.player.get_costs()
         cost_list = [
@@ -158,17 +157,12 @@ class Auction(Page):
         # get bids for this player
         bid_qs = self.player.bid_set.all()
         #assert len(bid_qs) == Constants.num_bids_per_round
-
         bids_formset = BidFormSet(queryset=bid_qs)
         bid_fields = [field for field in [form for form in bids_formset]]
-        table_data = make_initial_rounds_table(self.session, Constants)
-        output_prices = table_data.output_prices.astype(int)[:self.subsession.round_number]
         total_net_value = sum([output_price - cost for cost in costs])
         #assert False, "permit value {:f}".format(test)
         return {
             'bid_formset': bids_formset,
-            'table_data': table_data,
-            'output_prices': output_prices,
             'cost_list': cost_list,
             'bid_table': zip(bid_fields, cost_list),
             'max_bid_dollar_value': self.player.money + total_net_value
@@ -317,23 +311,20 @@ class AuctionWaitPage(WaitPage):
 
 class AuctionResults(Page):
     def vars_for_template(self):
-        permits_available = self.subsession.permits_available
         auction_price = self.subsession.auction_price
         ecr_removed = self.subsession.ecr_reserve_amount_used
         pcr_added = self.subsession.pcr_amount_added
         # Retrieve only this player's bids
         player_id = self.player.id
         bids = self.player.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid', 'accepted')
-
         num_bids = len(bids)
-        num_successful_bids = bids.aggregate(total_won=Sum('accepted'))['total_won']
-        no_bids_accepted = (num_successful_bids == 0)
+        num_successful_bids = 0 if num_bids == 0 else bids.aggregate(total_won=Sum('accepted'))['total_won']
+        no_bids_accepted = (num_bids == 0 or num_successful_bids == 0)
         no_bids_rejected = (num_bids == 0 or num_bids == num_successful_bids)
         return {
             'player_name': self.player.first_name,
             'player_id': player_id,
             'bids': [(index, bid['accepted'], bid['bid']) for index, bid in enumerate(bids)],
-            'permits_available': permits_available,
             'this_player_bought': self.player.permits_purchased_auction,
             'how_many_accepted': num_successful_bids,
             'num_bids': num_bids,
@@ -398,6 +389,10 @@ class FinalResults(Page):
         return {
             'payout': self.player.money * Constants.payout_rate
         }
+
+def test_view(request):
+    return HttpResponse('This is a custom view')
+
 
 page_sequence = [
     Signin,

@@ -93,6 +93,12 @@ class Subsession(BaseSubsession):
             # Costs need to be sorted by player
             #player.generate_unit_stubs(self.session.vars['costs'][player.role()][player_index])
 
+    def vars_for_admin_report(self):
+        money = sorted([p.money for p in self.get_players()])
+#        session_qs = Session.objects.filter(round_number<=self.round_number)
+        return {'money': money}
+
+
 class Group(BaseGroup):
     pass
 
@@ -119,12 +125,12 @@ class Player(BasePlayer):
     # Helper function to retrieve bids
     def get_bids(self):
         bid_qs = Bid.objects.filter(player__exact=self).filter(bid__isnull=False)
-        return [dec.bid for dec in bid_qs]
+        return [bids.bid for bids in bid_qs]
 
     # Helper function to retreive plant costs
     def get_costs(self):
         unit_qs = Unit.objects.filter(player__exact=self).order_by('cost')
-        return [dec.cost for dec in unit_qs]
+        return [unit.cost for unit in unit_qs]
 
     def generate_bid_stubs(self):
         """
@@ -137,12 +143,12 @@ class Player(BasePlayer):
             num_bids = Constants.num_bids_low
         for _ in range(num_bids):
             bid = self.bid_set.create() # create a new bid object as part of the player's bid set
-            bid.round_num = self.subsession.round_number
+            bid.round = self.subsession.round_number
             bid.pid_in_group = self.id_in_group
             bid.save()   # important: save to DB!
             if self.role() == 'high_emitter':
                 bid2 = self.bid_set.create() # Double the bids for high emitters
-                bid2.round_num = self.subsession.round_number
+                bid2.round = self.subsession.round_number
                 bid2.pid_in_group = self.id_in_group
                 bid2.save()
 
@@ -164,7 +170,7 @@ class Player(BasePlayer):
 
 class Bid(Model):  # inherits from Django's base "Model"
     BID_CHOICES = currency_range(c(Constants.reserve_price), c(Constants.maximum_bid), c(Constants.bid_price_increment))
-    round_num = models.PositiveIntegerField()
+    round = models.PositiveIntegerField()
     bid = models.CurrencyField(choices=BID_CHOICES)
     accepted = models.PositiveIntegerField()
     pid_in_group = models.PositiveIntegerField()

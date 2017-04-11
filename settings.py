@@ -7,7 +7,6 @@ import dj_database_url
 
 import otree.settings
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # the environment variable OTREE_PRODUCTION controls whether Django runs in
@@ -68,6 +67,19 @@ INSTALLED_APPS = ['otree']
 DEMO_PAGE_INTRO_TEXT = """
 oTree: Permit Experiments
 """
+
+ROOM_DEFAULTS = {}
+
+ROOMS = [
+    {
+        'name': 'Permit_Auctions',
+        'display_name': 'Permit Markets',
+        'participant_label_file': '/Users/wms5f/Programming/permitauctionapp/Permit_Auctions.txt',
+        'use_secure_urls': True,
+    },
+]
+
+
 
 SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 0.000,

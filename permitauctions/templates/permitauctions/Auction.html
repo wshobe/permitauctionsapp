@@ -82,7 +82,7 @@
 
     {% next_button %}
 	
-	<br /><hr><br />
+	<hr><br />
 	<table>
 		<tr>
 		<th>Round</th>
@@ -104,8 +104,14 @@
 		</tr>
 		<tr>
 			<td>Output price</td>
-        {% for output_price in output_prices %}
-			<td> {{ output_price }}</td>
+        {% for output_price in table_data.output_prices %}
+			<td> {% if output_price %}{{ output_price }}{% endif %}</td>
+        {% endfor %}
+		</tr>
+		<tr>
+			<td>Auction price</td>
+        {% for auction_price in table_data.auction_prices %}
+			<td> {% if auction_price %}{{ auction_price }} {% endif %}</td>
         {% endfor %}
 		</tr>
 	</table>

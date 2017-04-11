@@ -9,12 +9,10 @@
 
 <h3>Production</h3>
 
-<ul>
+<ul style="font-size: 1.1 em;">
 	<li>You will have {{player.capacity}} units of capacity as shown by the rows in the table below.</li>
-	<li>In each period the product price will be either low: {{session.config.low_output_price}}, or high: 
-	{{high_output_price}}. The output price for each period is random with a 50% chance of either price. </li>
-	<li>
-		<ul><li>In this period, suppose that each unit produces a product that is sold for {{Constants.low_output_price}}, (table below, 2nd column).</li>
+	<li>In each period the product price will be either low: ${{session.config.low_output_price}}, or high: ${{high_output_price}}. The output price for each period is random with a 50% chance of either price. 
+		<ul style="font-size: smaller; list-style-type:square"><li>In this period, suppose that each unit produces a product that is sold for ${{session.config.low_output_price}}, (table below, 2nd column).</li>
 			<li>Your units are listed in order of increasing cost (3rd column).</li>
 			<li>One or more permits are needed to operate each capacity unit (4th column). (This depends on whether you are a low user or a high user.)</li>
 			<li>The net value (before permit costs) of operating a capacity unit (5th column) is the difference between the output price and the unit cost.</li>
@@ -25,13 +23,13 @@
 	<li>Remember that your earnings will be determined by differences between the values for permits used and what you pay for the permits.</li>
 </ul>
 <div style="margin-left: 100px">
-    <table style="border: 1px solid black;;  padding: 10px; align: center;">
-        <tr><th style=" padding: 10px; text-align: center;">Capacity<br />Unit</th>
-			<th style=" padding: 10px; align: center;">Output<br />price</th>
-			<th style=" padding: 10px; align: center;">Production<br />Cost</th>
-			<th style=" padding: 10px; align: center;">Permits<br />per unit</th>
-			<th style=" padding: 10px; align: center;">Unit<br />Value</th>
-			<th style=" padding: 10px; align: center;">Permit Value{%if player.emission_intensity > 1 %}<br /><span style="font-size: medium;">
+    <table>
+        <tr><th>Capacity<br />Unit</th>
+			<th>Output<br />price</th>
+			<th>Production<br />Cost</th>
+			<th>Permits<br />per unit</th>
+			<th>Unit<br />Value</th>
+			<th>Permit Value{%if player.emission_intensity > 1 %}<br /><span style="font-size: medium;">
 					(At {{player.emission_intensity}} permits per unit)</span>
 				{% endif %}</th>
 		</tr>
@@ -39,12 +37,12 @@
         {% for plant in cost_list %}
 
         <tr>
-			<td style=" padding: 10px; text-align: center;">{{ plant.0 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ output_price }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.1 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.2 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.3 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.4 }}</td>
+			<td>{{ plant.0 }}</td>
+			<td>{{ output_price }}</td>
+			<td>{{ plant.1 }}</td>
+			<td>{{ plant.2 }}</td>
+			<td>{{ plant.3 }}</td>
+			<td>{{ plant.4 }}</td>
 		</tr>
         {% endfor %}
     </table><br /><br />
@@ -62,11 +60,11 @@
 	table, th, td {
 	    border: 1px solid black;
 	    border-collapse: collapse;
-		font-size: larger;
+		font-size: 1.05em;
 	}
 	th, td {
-	    padding: 5px;
-	    text-align: left;
+	    padding: 10px;
+	    text-align: center;
 	}
 	ul, li {
 	    font-family: verdana;

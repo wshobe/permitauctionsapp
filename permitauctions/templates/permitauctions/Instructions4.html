@@ -11,7 +11,7 @@
 
 <ul>
 	<li>Series of periods: There will be {{session.config.last_round}} periods in this session, each with an auction followed by a production decision.</li>
-	<li>You can make as many bids as the bid entry form allows, which will be {{Constants.num_bids_low}} for low users and {{Constants.num_bids_high}} for high users.</li>
+	<li>You can make as many bids as the number of plants you own<!--bid entry form allows -->, which will be {{Constants.num_bids_low}} for low users and {{Constants.num_bids_high}} for high users. For high users, each bid will be for two permits, reflecting the greater need for permits to run these units.</li>
 	<li>Production decision: After you know how many permits you have to work with, you will decide which capacity units to operate. This determines how many permits will be needed to meet the "compliance" obligation.</li>
 	<li>Permits may be used for production in the current period or saved for use in later periods. Permits will have no value at the end of the last period.</li>
 	{% if Constants.must_run > 0 %}<li>Must-serve capacity: In each period, all producers must produce at least 
@@ -22,7 +22,7 @@
 
     {% next_button %}
 
-	<br /><hr><br />
+	<hr><br />
 	<table>
 		<tr>
 		<th>Round</th>
@@ -43,6 +43,7 @@
         {% endfor %}
 		</tr>
 	</table>
+	
 
 
 {% endblock %}
@@ -54,7 +55,7 @@
 	table, th, td {
 	    border: 1px solid black;
 	    border-collapse: collapse;
-		font-size: 1em;
+		font-size: 1.05em;
 	}
 	th, td {
 	    padding: 5px;
