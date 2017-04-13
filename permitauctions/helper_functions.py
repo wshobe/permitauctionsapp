@@ -41,27 +41,33 @@ def make_supply_schedule(subsession,constants):
     num_high_emitters = subsession.session.config['num_high_emitters']
     initial_ecr_reserve_amount = subsession.session.config['initial_ecr_reserve_amount']
     ecr_reserve_amount = subsession.session.config['initial_ecr_reserve_amount']
+    ecr_increment = subsession.session.config['ecr_reserve_increment']
+    ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     emission_intensity_high = constants.emission_intensity_high
     emission_intensity_low = constants.emission_intensity_low
     num_possible_bids = num_low_emitters*constants.num_bids_low*emission_intensity_low + \
                         num_high_emitters*constants.num_bids_high*emission_intensity_high
-    ecr_increment = constants.reserve_increment
-    supply_step = ecr_increment == initial_ecr_reserve_amount
+    supply_step_all = ecr_increment == initial_ecr_reserve_amount
     ecr_price_increment = 1/ecr_increment
+    #num_ecr_steps = int(ecr_increment/ecr_reserve_amount)
     ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     permits_available = subsession.permits_available
     reserve_price = constants.reserve_price
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
-    q_star = permits_available - ecr_increment *int(ecr_trigger_price - reserve_price)
-    if supply_step:
+    q_star = min(1,permits_available - ecr_reserve_amount)
+    #if q_star <=0:
+    #    q_star = 1
+    #    supply_step_all=True
+    #    start = permits_available - len
+    if supply_step_all:
         # Supply reduction in one big step
-        supply_step = np.ones(initial_ecr_reserve_amount)
+        supply_step = np.ones(initial_ecr_reserve_amount)*ecr_trigger_price
     else:
         #Smooth linear supply reduction
         supply_step = np.arange(reserve_price, ecr_trigger_price+ecr_price_increment,ecr_price_increment)
     supply = np.empty(num_possible_bids+permits_available+len(supply_step))
     supply[:q_star-1] = reserve_price
-    supply[q_star-1:permits_available] = supply_step
+    supply[q_star-1:permits_available] = supply_step[:len(supply[q_star-1:permits_available])]
     supply[permits_available:supply.size] = pcr_trigger_price
     return supply
     
@@ -74,7 +80,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
     supply = supply_curve[:num_bids]
     diff = bids - supply
     first_rejected_bid = -1
-    ecr_increment = constants.reserve_increment
+    ecr_increment = subsession.session.config['ecr_reserve_increment']
     ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
     permits_available = subsession.permits_available

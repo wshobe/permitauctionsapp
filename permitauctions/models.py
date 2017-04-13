@@ -4,6 +4,8 @@ from otree.api import (
 )
 from otree.db.models import Model, ForeignKey
 from .generate_random_costs import costs1, assign_costs, generate_output_prices
+import operator
+import numpy as np
 
 author = 'Derek Wu (derek.x.wu@gmail.com, dxw7za)'
 
@@ -25,22 +27,22 @@ class Constants(BaseConstants):
     must_run = 0  # number of plants each player is required to produce from
 
     high_price_probability = 0.5
-    initial_cash_endowment_high = c(100)
+    initial_cash_endowment_high = c(150)
     initial_cash_endowment_low = c(50)
 
     ### Auction details
     #ecr_trigger_price = c(7)  # Price to start removing permits from the pool
-    reserve_increment = 2
+    #ecr_reserve_increment = 2
     reserve_price = c(5)  # absolutely no bids below reserve price; don't even let them try
     maximum_bid = c(30)
     bid_price_increment = c(0.5)
     num_bids_high = 4
     num_bids_low = 4
 
-    penalty_amount = c(25)  # Cost of running a plant without necessary permits
+    penalty_amount = c(35)  # Cost of running a plant without necessary permits
 
     ### Misc
-    payout_rate = 0.01  # Conversion rate from player.money to real-life payout
+#    payout_rate = 0.01  # Conversion rate from player.money to real-life payout
 
 class Subsession(BaseSubsession):
     number_sold_auction = models.PositiveIntegerField()
@@ -66,9 +68,9 @@ class Subsession(BaseSubsession):
             Costs change in each round
              Pass only the session and Constants objects to the cost function 
             """
-            self.session.vars['costs1'] = costs1(self.session,Constants)
+            self.session.vars['costs'] = costs1(self.session,Constants)
             self.session.vars['output_prices'] = generate_output_prices(self.session,Constants)
-        all_costs = self.session.vars['costs1']
+        all_costs = self.session.vars['costs']
         self.output_price = self.session.vars['output_prices'][self.round_number - 1]
         for player in self.get_players():
             if self.round_number == 1:
@@ -95,9 +97,15 @@ class Subsession(BaseSubsession):
 
     def vars_for_admin_report(self):
         money = sorted([p.money for p in self.get_players()])
-#        session_qs = Session.objects.filter(round_number<=self.round_number)
-        return {'money': money}
-
+        for p in self.get_players():
+            p.payoff = p.money * self.session.config['payout_rate']
+        payoffs = [p.money * self.session.config['payout_rate'] for p in self.get_players()]
+        mean = np.mean(payoffs)
+        #if self.round_number == 1:
+        #    all_costs = self.session.vars['costs']
+        #    output_prices = repeat(self.session.vars['output_prices'],48)
+        #    net_value = sort(list(map(operator.sub,output_prices, all_costs)), reverse=True)
+        return {'money': money,'payoffs':payoffs,'mean':mean}
 
 class Group(BaseGroup):
     pass

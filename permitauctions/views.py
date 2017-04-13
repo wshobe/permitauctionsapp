@@ -363,11 +363,13 @@ class Production(Page):
         if net_permits < 0:
             self.player.penalty = net_permits * Constants.penalty_amount
             self.player.money = cash_holdings + self.player.penalty # Penalty is a negative amount
+            self.player.payoff = cash_holdings + self.player.penalty * self.session.config['payout_rate']
             self.player.permits = 0
         else:
             self.player.permits = self.player.permits - permits_required
             self.player.penalty = 0
             self.player.money = cash_holdings
+            self.player.payoff = cash_holdings * self.session.config['payout_rate']
 
 
 class RoundResults(Page):
@@ -386,7 +388,7 @@ class FinalResults(Page):
 
     def vars_for_template(self):
         return {
-            'payout': self.player.money * Constants.payout_rate
+            'payout': self.player.money * self.session.config['payout_rate']
         }
 
 

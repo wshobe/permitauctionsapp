@@ -2,12 +2,14 @@
 {% load staticfiles otree_tags %}
 
 {% block title %}
-    End of Experiment
+    End of Experiment, Player #{{player.id_in_group}}
+
 {% endblock %}
 
 {% block content %}
-	<p>You finished the game with {{ player.money }}.</p>
+
+	<p>You finished the session with {{ player.money }}.</p>
 	<p>As a result, you've earned {{ payout }}.</p><br />
 	
-    
+
 {% endblock %}

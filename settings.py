@@ -100,6 +100,7 @@ SESSION_CONFIGS = [
     'cap_decrement': 1,
     'initial_ecr_reserve_amount': 6,
     'ecr_trigger_price': 8,
+    'ecr_reserve_increment': 2,
     'num_low_emitters': 6,
     'supply_step': False,
     'num_high_emitters': 6,
@@ -112,7 +113,8 @@ SESSION_CONFIGS = [
     'high_emitter_min_cost': 1,
     'high_emitter_max_cost': 30,
     'low_output_price': 30,
-    'high_output_price_increment': 10,  
+    'high_output_price_increment': 10,
+    'payout_rate': 0.05,
     'price_containment_trigger': 12,
     'price_containment_reserve_amount': 8 # Max permits to add if price over containment trigger
      }
