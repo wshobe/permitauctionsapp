@@ -54,7 +54,7 @@ def make_supply_schedule(subsession,constants):
     permits_available = subsession.permits_available
     reserve_price = constants.reserve_price
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
-    q_star = min(1,permits_available - ecr_reserve_amount)
+    q_star = max(1,permits_available - ecr_reserve_amount)
     #if q_star <=0:
     #    q_star = 1
     #    supply_step_all=True

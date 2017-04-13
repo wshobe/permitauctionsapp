@@ -14,7 +14,7 @@
 
 	<li>Permits: Producers are required to obtain permits to cover their output. </li>
 
-	<li>Permit Requirements: Different producers will need different numbers of permits for each unit produced. For <i>low users</i> the number of permits per unit output is {{ Constants.emission_intensity_low}}. <i>High users</i> need {{ Constants.emission_intensity_high }} permits for each unit of output. There are {{Constants.num_low_users}} low users in this market and {{Constants.num_high_users}} high users. <b>Your role during today's session will be: <em>{{ player_type}} user</em>.</b></li>
+	<li>Permit Requirements: Different producers will need different numbers of permits for each unit produced. For <i>low users</i> the number of permits per unit output is {{ Constants.emission_intensity_low}}. <i>High users</i> need {{ Constants.emission_intensity_high }} permits for each unit of output. There are {{session.config.num_low_users}} low users in this market and {{session.config.num_high_users}} high users. <b>Your role during today's session will be: <em>{{ player_type}} user</em>.</b></li>
 
 	<li>Product Price: In any period, the product price could be high, {{ high_output_price}}, or low, 
 		{{ session.config.low_output_price}}. The sequence of output prices is not known in advance, but the current price at which the output can be sold in a round will be announced at the start of each round. All producers receive the same price for a given round.</li>
