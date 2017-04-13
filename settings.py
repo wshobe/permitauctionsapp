@@ -21,7 +21,6 @@ ADMIN_USERNAME = 'admin'
 
 # for security, best to set admin password in an environment variable
 ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
-ADMIN_PASSWORD = 'rggi-ecr'
 # don't share this with anybody.
 SECRET_KEY = 'l)2(&wh@^_l9@e04v20f#ne-*hw_z!94dz(igf$_m^ifu3g4mp'
 
