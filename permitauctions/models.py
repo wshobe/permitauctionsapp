@@ -15,7 +15,7 @@ class Constants(BaseConstants):
     ### App metadata
     name_in_url = 'permit_trading'
     players_per_group = None  # Puts all players in one group
-    num_rounds = 10
+    num_rounds = 30
 
     ### Production constants
     emission_intensity_high = 2  # permits required per plant ***Change this at your peril!!!
@@ -25,14 +25,14 @@ class Constants(BaseConstants):
     must_run = 0  # number of plants each player is required to produce from
 
     high_price_probability = 0.5
-    initial_cash_endowment_high = c(120)
-    initial_cash_endowment_low = c(60)
+    initial_cash_endowment_high = c(100)
+    initial_cash_endowment_low = c(50)
 
     ### Auction details
-    ecr_trigger_price = c(7)  # Price to start removing permits from the pool
+    #ecr_trigger_price = c(7)  # Price to start removing permits from the pool
     reserve_increment = 2
-    reserve_price = c(4)  # absolutely no bids below reserve price; don't even let them try
-    maximum_bid = c(20)
+    reserve_price = c(5)  # absolutely no bids below reserve price; don't even let them try
+    maximum_bid = c(30)
     bid_price_increment = c(0.5)
     num_bids_high = 4
     num_bids_low = 4
@@ -40,7 +40,7 @@ class Constants(BaseConstants):
     penalty_amount = c(25)  # Cost of running a plant without necessary permits
 
     ### Misc
-    payout_rate = 0.5  # Conversion rate from player.money to real-life payout
+    payout_rate = 0.01  # Conversion rate from player.money to real-life payout
 
 class Subsession(BaseSubsession):
     number_sold_auction = models.PositiveIntegerField()

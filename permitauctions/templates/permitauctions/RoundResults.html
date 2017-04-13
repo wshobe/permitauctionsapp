@@ -9,33 +9,38 @@
 
     <table style="width: 100%;  padding-left: 10px;padding-right: 10px; text-align: left;">
 		<tr><td style="width: 50%;text-align: left;">
-    		<p></p>
-			<p>You purchased {{ player.permits_purchased_auction }} 
+    		<br />
+			<ul>
+			<li>You purchased {{ player.permits_purchased_auction }} 
 				permit{%if player.permits_purchased_auction > 1  %}s{% endif %} in the auction for {{ spent_auction }}.  
-			</p>
-			<p>You ran {{ player.production_amount }} plant{%if player.production_amount != 1 %}s{% endif %} 
+			</li>
+    		{% if player.min_production > 0 %}
+			<li>You are required to produce with at least {{ player.min_production }} plant
+				{% if player.min_production > 1 %}s{% endif %}.</li>
+			{% endif %}
+			<li>You ran {{ player.production_amount }} plant{%if player.production_amount != 1 %}s{% endif %} 
 				and used {{permits_used}}
 				permit{%if permits_used != 1 %}s{% endif %}.<br />
 				&nbsp;&nbsp;&nbsp;(Each of your plants requires {{ player.emission_intensity }} 
-				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.)</p>
-    		{% if player.min_production > 0 %}
-			<p>You are required to produce with at least {{ player.min_production }} plant
-				{% if player.min_production > 1 %}s{% endif %}.</p>
+				permit{%if player.emission_intensity > 1 %}s{% endif %} to operate.)</li>
+    		{% if player.penalty < 0 %}
+    		<li><b>You paid <span style="color: red">{{ penalty }}</span> in penalties this period because you did not own enough permits to cover your production.</b></li>
 			{% endif %}
-    		<p></p>
-			<p>Your earnings from the sale of your produce were: {{earnings}}.
-    		<p >You now own {{ player.permits }} 
-				permit{%if player.permits == 1 %}{% else %}s{% endif %}.</p>
-    		<p>Your current cash balance is <b>{{ player.money }}</b>. </p>
+			<li>Your earnings from the sale of your product were: {{earnings}}.
+    		<li>You now own {{ player.permits }} 
+				permit{%if player.permits == 1 %}{% else %}s{% endif %}.</li>
+    		<li>Your current cash balance is <b>{{ player.money }}</b>. </li>
+			</ul>
 		</td>
-		<td style="width: 50%;text-align: left;"> 
-			<p>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</p>
-			<p>Permits for sale at auction this period: {{ permits_available }}</p>
-			<p>Permits sold: {{subsession.number_sold_auction}}
-			<p>Permits retired due to low bids in the auction: {{subsession.ecr_reserve_amount_used}}
-			<p>Permits released from the price containment reserve: {{subsession.pcr_amount_added}}
-			<p><em>Auction price: <b>{{subsession.auction_price}}</b>.</em></p>
-			
+		<td style="width: 50%;text-align: left;">
+			<ul> 
+			<li>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</li>
+			<li>Permits for sale at auction this period: {{ permits_available }}</li>
+			<li>Permits sold in the auction: {{subsession.number_sold_auction}}</li>
+			<li>Permits retired due to low bids in the auction: {{subsession.ecr_reserve_amount_used}}</li>
+			<li>Permits released from the price containment reserve: {{subsession.pcr_amount_added}}</li>
+			<li><em>Auction price: <b>{{subsession.auction_price}}</b>.</em></li>
+		</ul>
 		</td></tr>
     </table>
 	<br />

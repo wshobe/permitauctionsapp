@@ -21,7 +21,7 @@ ADMIN_USERNAME = 'admin'
 
 # for security, best to set admin password in an environment variable
 ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
-#ADMIN_PASSWORD = 'rggi-ecr'
+ADMIN_PASSWORD = 'rggi-ecr'
 # don't share this with anybody.
 SECRET_KEY = 'l)2(&wh@^_l9@e04v20f#ne-*hw_z!94dz(igf$_m^ifu3g4mp'
 
@@ -93,28 +93,29 @@ SESSION_CONFIGS = [
      {
     'name': 'Permit_Auctions',
     'display_name': 'Permit Markets',
-    'num_demo_participants': 2,
+    'num_demo_participants': 12,
     'app_sequence': ['permitauctions'],
     'random_start_order': True,
     'permits_persist': True,
-    'initial_cap': 12,
+    'initial_cap': 42,
     'cap_decrement': 1,
-    'initial_ecr_reserve_amount': 5,
-    'ecr_trigger_price': 7,
-    'num_low_emitters': 1,
-    'num_high_emitters': 1,
+    'initial_ecr_reserve_amount': 6,
+    'ecr_trigger_price': 8,
+    'num_low_emitters': 6,
+    'supply_step': False,
+    'num_high_emitters': 6,
     'random_seed': 113,
     'output_price_random_seed': 1288,
     'show_instructions': False,
-    'last_round': 3,
-    'low_emitter_min_cost': 8,
-    'low_emitter_max_cost': 15,
-    'high_emitter_min_cost': 4,
-    'high_emitter_max_cost': 9,
-    'low_output_price': 21,
-    'high_output_price_increment': 8,  
+    'last_round': 30,
+    'low_emitter_min_cost': 10,
+    'low_emitter_max_cost': 30,
+    'high_emitter_min_cost': 1,
+    'high_emitter_max_cost': 30,
+    'low_output_price': 30,
+    'high_output_price_increment': 10,  
     'price_containment_trigger': 12,
-    'price_containment_reserve_amount': 6  # Max permits to add if price over containment trigger
+    'price_containment_reserve_amount': 8 # Max permits to add if price over containment trigger
      }
 ]
 

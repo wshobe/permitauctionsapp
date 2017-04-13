@@ -17,9 +17,11 @@
 			{% endif %}
     		<li>Each of your plants requires {{ player.emission_intensity }} 
 				permit{%if player.emission_intensity > 1 %}s{% endif %} to produce.</li>
-    		<li>Your current cash balance is <b>{{ player.money }}</b>. You can submit bids for any number of permits, as long as the bid total 
-				does not exceed your cash balance plus the sum of permit values shown in the table below. </li>
-			<li>The sum of your bids, must not exceed <b>{{max_bid_dollar_value}}</b>.</li>
+    		<li>Your current cash balance is <b>{{ player.money }}</b>. 
+				<!--You can submit bids for any number of permits, as long as the bid total 
+				does not exceed your cash balance plus the sum of permit values shown in the table below. -->
+			</li>
+			<!-- ><li>The sum of your bids, must not exceed <b>{{max_bid_dollar_value}}</b>.</li> -->
 		</ul>
 		</td>
 		<td> 
