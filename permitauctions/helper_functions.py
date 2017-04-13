@@ -67,7 +67,7 @@ def make_supply_schedule(subsession,constants):
         supply_step = np.arange(reserve_price, ecr_trigger_price+ecr_price_increment,ecr_price_increment)
     supply = np.empty(num_possible_bids+permits_available+len(supply_step))
     supply[:q_star-1] = reserve_price
-    supply[q_star-1:permits_available] = supply_step[:len(supply[q_star-1:permits_available])]
+    supply[q_star-1:permits_available] = supply_step
     supply[permits_available:supply.size] = pcr_trigger_price
     return supply
     
