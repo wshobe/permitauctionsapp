@@ -6,6 +6,7 @@ from otree.db.models import Model, ForeignKey
 from .generate_random_costs import costs1, assign_costs, generate_output_prices
 import operator
 import numpy as np
+import logging
 
 author = 'Derek Wu (derek.x.wu@gmail.com, dxw7za)'
 
@@ -60,6 +61,7 @@ class Subsession(BaseSubsession):
         self.permits_available = self.session.config['initial_cap'] - (self.round_number - 1) * self.session.config['cap_decrement']
         num_low_emitters = self.session.config['num_low_emitters']
         num_high_emitters = self.session.config['num_high_emitters']
+        log = logging.getLogger('permitauctionsapp')
 
         if self.round_number == 1:
             self.group_randomly()
@@ -72,23 +74,29 @@ class Subsession(BaseSubsession):
             self.session.vars['output_prices'] = generate_output_prices(self.session,Constants)
         all_costs = self.session.vars['costs']
         self.output_price = self.session.vars['output_prices'][self.round_number - 1]
+        high_index = -1
+        low_index = -1
         for player in self.get_players():
             if self.round_number == 1:
                 player.participant.vars['first_name'] = player.first_name
                 player.participant.vars['last_name'] = player.last_name
                 player.participant.vars['computing_ID'] = player.computing_ID
             if player.role() == 'high_emitter':
+                high_index += 1
                 player.money = Constants.initial_cash_endowment_high
                 player.capacity = Constants.production_capacity_high
                 player.emission_intensity = Constants.emission_intensity_high
                 # TODO: Is this doing what you think it is
-                player_index = (self.round_number - 1) * num_high_emitters + player.id_in_group - num_low_emitters - 1
+                player_index = ((self.round_number - 1) * num_high_emitters) - 1 + high_index
+                log.info('High: player_index: {0}'.format(player_index))
                 costs = assign_costs(player,all_costs['high_emitters'],player_index)
             elif player.role() == 'low_emitter':
+                low_index += 1
                 player.money = Constants.initial_cash_endowment_low
                 player.capacity = Constants.production_capacity_low
                 player.emission_intensity = Constants.emission_intensity_low
-                player_index = (self.round_number - 1) * num_low_emitters + player.id_in_group - 1
+                player_index = ((self.round_number - 1) * num_low_emitters) - 1 + low_index
+                log.info('Low: player_index: {0}'.format(player_index))
                 costs = assign_costs(player,all_costs['low_emitters'],player_index)
             player.generate_bid_stubs()
             player.generate_unit_stubs(costs)

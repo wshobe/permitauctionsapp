@@ -79,7 +79,73 @@ oTree: Permit Experiments
 #    },
 #]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'logfile': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': "logfile",
+            'maxBytes': 50000,
+            'backupCount': 2,
+            'formatter': 'standard',
+        },
+        'console':{
+            'level':'INFO',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': "info_file.log",
+            'maxBytes': 50000,
+            'backupCount': 2,
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers':['console'],
+            'propagate': True,
+            'level':'WARN',
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'permitauctionsapp': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+    }
+}
 
+#LOGGING = {
+#    'version': 1,
+#    'disable_existing_loggers': False,
+#    'handlers': {
+#        'file': {
+#            'level': 'INFO',
+#            'class': 'logging.FileHandler',
+#            'filename': 'debug_info.log',
+#        },
+#    },
+#    'loggers': {
+#        'django': {
+#            'handlers': ['file'],
+#            'level': 'INFO',
+#            'propagate': True,
+#        },
+#    },
+#}
 
 SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 0.000,
@@ -96,25 +162,25 @@ SESSION_CONFIGS = [
     'app_sequence': ['permitauctions'],
     'random_start_order': True,
     'permits_persist': True,
-    'initial_cap': 48,
+    'initial_cap': 52,     #48
     'cap_decrement': 1,
-    'initial_ecr_reserve_amount': 6,
+    'initial_ecr_reserve_amount': 9,
     'ecr_trigger_price': 8,
-    'ecr_reserve_increment': 2,
+    'ecr_reserve_increment': 3,
     'num_low_emitters': 6,
     'supply_step': False,
     'num_high_emitters': 6,
     'random_seed': 113,
     'output_price_random_seed': 1288,
     'show_instructions': False,
-    'last_round': 30,
+    'last_round': 30,         #30
     'low_emitter_min_cost': 10,
     'low_emitter_max_cost': 28,
     'high_emitter_min_cost': 1,
     'high_emitter_max_cost': 28,
     'low_output_price': 30,
     'high_output_price_increment': 10,
-    'payout_rate': 0.05,
+    'payout_rate': 0.04,
     'price_containment_trigger': 12,
     'price_containment_reserve_amount': 8 # Max permits to add if price over containment trigger
      }

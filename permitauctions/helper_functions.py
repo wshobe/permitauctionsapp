@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from otree.api import Currency as c
+import logging
+
 
 def make_rounds_table(session,constants, subsession):
     '''Create the data structure that is used to construct the running table of round information:
@@ -43,6 +45,7 @@ def make_supply_schedule(subsession,constants):
     ecr_reserve_amount = subsession.session.config['initial_ecr_reserve_amount']
     ecr_increment = subsession.session.config['ecr_reserve_increment']
     ecr_trigger_price = subsession.session.config['ecr_trigger_price']
+    pcr_reserve_amount = subsession.session.config['price_containment_reserve_amount'] 
     emission_intensity_high = constants.emission_intensity_high
     emission_intensity_low = constants.emission_intensity_low
     num_possible_bids = num_low_emitters*constants.num_bids_low*emission_intensity_low + \
@@ -55,31 +58,114 @@ def make_supply_schedule(subsession,constants):
     reserve_price = constants.reserve_price
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
     q_star = max(1,permits_available - ecr_reserve_amount)
-    #if q_star <=0:
-    #    q_star = 1
-    #    supply_step_all=True
-    #    start = permits_available - len
     if supply_step_all:
         # Supply reduction in one big step
         supply_step = np.ones(initial_ecr_reserve_amount)*ecr_trigger_price
     else:
         #Smooth linear supply reduction
         supply_step = np.arange(reserve_price, ecr_trigger_price+ecr_price_increment,ecr_price_increment)
-    supply = np.empty(num_possible_bids+permits_available+len(supply_step))
+    supply = np.empty(num_possible_bids+permits_available+len(supply_step)+pcr_reserve_amount)
     supply[:q_star-1] = reserve_price
     supply[q_star-1:permits_available] = supply_step
-    supply[permits_available:supply.size] = pcr_trigger_price
+    supply[permits_available:permits_available+pcr_reserve_amount] = pcr_trigger_price
+    supply[permits_available+pcr_reserve_amount:len(supply)] = constants.maximum_bid + 10
     return supply
     
 def calculate_auction_price(these_bids,supply_curve,subsession,constants):
+    # these_bids is the bids_df pd data frame
+    log = logging.getLogger('permitauctionsapp')
+    log.info('In function: calculate_auction_price')
+    bids = these_bids.sort(['bid'],ascending=False)
+    num_bids = len(bids)
+    reserve_price = constants.reserve_price
+    supply = supply_curve[:num_bids]
+    ecr_reserve_amount = subsession.session.config['initial_ecr_reserve_amount']
+    pcr_reserve_amount = subsession.session.config['price_containment_reserve_amount'] 
+    permits_available = subsession.permits_available
+    q_star = permits_available - ecr_reserve_amount
+    max_permits = permits_available + pcr_reserve_amount
+    # Take care of the improbable "no bids" case
+    # This actually cannot happen. The function is never called in the no bids case.
+    if len(bids) == 0:
+        return {'price':reserve_price,'first_rejected_bid':reserve_price,'accepted': [] }
+    # If the number of bids is less than the number available accept them all and return the reserve price.
+    elif num_bids <= subsession.permits_available:
+        bids.accepted = 1
+        bids = bids.sort_index()
+        return {'price':reserve_price,'first_rejected_bid':reserve_price,'accepted':bids.accepted}
+    '''
+        This is the normal case. Loop through the bids from high to low until the supply 
+        is exhausted. Accept these, set the auction price and reject all lower bids.
+    '''
+    first_rejected_bid = -1
+    price = -1
+    last_positive_bid_index = None
+    pcr_added = 0
+    for index, bid_record in enumerate(bids.bid,1):
+        if index == num_bids:
+            # We have gone through all of the bids. There is no "next" bid.
+            if first_rejected_bid == -1:
+                # No bids are below the supply curve.
+                bids.accepted[index-1] = 1
+                first_rejected_bid = -1
+                price = supply[index-1]
+                if index >= permits_available + 1 and index < max_permits - 1:
+                    pcr_added += 1
+                last_positive_bid_index = index - 1
+                log.info('Last bid - last_positive_bid_index: %d' % last_positive_bid_index)
+                log.info('Last bid - price: %d' % price)
+            else:
+                # We know the last bid was below the supply curve, because
+                # an earlier bid was below the supply curve.
+                bids.accepted[index-1] = 0
+        # Bid is greater than or equal to supply and there are still permits available
+        # Since the last bid has already been processed, we know that bids[index] exists.
+        elif bids.bid[index] >= supply[index] and index < permits_available + 1:
+            bids.accepted[index-1] = 1
+            next
+        elif bids.bid[index] < supply[index]:
+            # Bid falls below the supply curve
+            if first_rejected_bid == -1:
+                first_rejected_bid = bids.bid[index]
+                price = max(bids.bid[index],supply[index-1])
+                bids.accepted[index-1] = 1
+                last_positive_bid_index = index - 1
+                log.info('1st rejected bid - last_positive_bid_index: %d' % last_positive_bid_index)
+                log.info('1st rejected bid - price: {0:.2f}'.format(price))
+            else:
+                # Some bid has already fallen below the supply curve
+                bids.accepted[index-1] = 0
+        elif index >= permits_available + 1 and index < max_permits - 1:
+            # The bid number has exceeded the number of permits available
+            if bids.bid[index] > supply[index]:
+                # Add permits from the PCR
+                pcr_added += 1
+                log.info('pcr_added: %d' % pcr_added)
+                bids.accepted[index-1] = 1
+            else:
+                bids[index-1].accepted = 1
+                first_rejected_bid = bids.bid[index]
+                price = bids.bid[index]
+                last_positive_bid_index = index - 1
+                log.info('PCR range - last_positive_bid_index: %d' % last_positive_bid_index)
+                log.info('PCR range - price: {0:.2f}'.format(price))
+    if last_positive_bid_index >= q_star and last_positive_bid_index < permits_available - 1:
+        subsession.ecr_reserve_amount_used = q_star + ecr_reserve_amount - last_positive_bid_index
+        log.info('ECR range - last_positive_bid_index: %d' % last_positive_bid_index)
+    elif pcr_added > 0:
+        subsession.pcr_amount_added = pcr_added
+        subsession.permits_available = permits_available + pcr_added
+        log.info('PCR range - permits_available + pcr_added: {0}'.format(permits_available + pcr_added))
+    bids = bids.sort_index()
+    return {'price':price,'first_rejected_bid':first_rejected_bid,'accepted':bids.accepted}
+
+
+def calculate_auction_price1(these_bids,supply_curve,subsession,constants):
     reserve_price = constants.reserve_price
     if len(these_bids) == 0:
         return {'price':reserve_price,'first_rejected_bid':reserve_price}
-    bids = these_bids.bid.values.astype(np.float64)
-    num_bids = bids.size
     supply = supply_curve[:num_bids]
     diff = bids - supply
-    first_rejected_bid = -1
     ecr_increment = subsession.session.config['ecr_reserve_increment']
     ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     pcr_trigger_price = subsession.session.config['price_containment_trigger']

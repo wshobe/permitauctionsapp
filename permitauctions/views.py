@@ -9,6 +9,8 @@ from .generate_random_costs import costs1, assign_costs, generate_output_prices
 from .helper_functions import make_rounds_table,make_supply_schedule,calculate_auction_price
 from django.forms import modelformset_factory
 from django.http import HttpResponse
+import logging
+
 
 def vars_for_all_templates(self):
     round_number = self.subsession.round_number
@@ -44,7 +46,6 @@ class Signin(Page):
                 player.first_name = old_player.first_name
                 player.last_name = old_player.last_name
                 player.computing_ID = old_player.computing_ID
-
         return self.round_number == 1
 
 class SigninWaitPage(WaitPage):
@@ -211,6 +212,7 @@ class AuctionWaitPage(WaitPage):
     """
     def after_all_players_arrive(self):
         permits_available = self.subsession.permits_available
+        self.subsession.ecr_reserve_amount_used = 0
         # Get all bid records for all players in this round and put the records in a dataframe
         supply = make_supply_schedule(self.subsession,Constants)
         bid_qs = Bid.objects.filter(player__session_id=self.session.id).filter(round=self.subsession.round_number).filter(bid__isnull=False)
@@ -219,23 +221,28 @@ class AuctionWaitPage(WaitPage):
             bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id', 'bid', 'accepted', 'player_id', 'pid_in_group')))
             auction_close = calculate_auction_price(bids_df,supply,self.subsession,Constants)
             auction_price = auction_close['price']
+            log = logging.getLogger('permitauctionsapp')
+            log.info('aapa auction_price: {0:.2f}'.format(auction_price))
+            permits_available = self.subsession.permits_available
             first_rejected_bid = auction_close['first_rejected_bid']
+            bids_df.accepted = auction_close['accepted']
         else:
             auction_price = Constants.reserve_price
             first_rejected_bid = Constants.reserve_price
-        self.subsession.ecr_reserve_amount_used = 0
-        # Retreive the allowance supply curve
-        self.subsession.initial_auction_price = auction_price
+        #self.subsession.ecr_reserve_amount_used = 0
+        self.subsession.auction_price = auction_price
         pcr_trigger = self.session.config['price_containment_trigger']
         pcr_available = self.session.config['price_containment_reserve_amount']
-        initial_ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
         if num_bids == 0:
             self.subsession.number_sold_auction = 0
             self.subsession.auction_price = auction_price
             for player in self.subsession.get_players():
                 player.permits_purchased_auction = 0
+        # This next block is for implementing the price containment reserve.
+        # This should be made optional based on settings
         # If the initial price is above the upper limit, release some of the pcr
-        if auction_price > pcr_trigger:
+            '''
+        elif auction_price > pcr_trigger:
             #assert False, "auction_price > pcr_trigger"
             pcr_added = 0
             while (auction_price > pcr_trigger and pcr_added < pcr_available):
@@ -247,48 +254,48 @@ class AuctionWaitPage(WaitPage):
                 pcr_added += 1
             self.subsession.pcr_amount_added = pcr_added
             permits_available = permits_available + pcr_added
-        # Price is at the reserve price then all ecr has been removed
+            self.subsession.auction_price = auction_price
+            # Price is at the reserve price then all ecr has been removed
+            '''
         elif auction_price == Constants.reserve_price:
-            self.subsession.ecr_reserve_amount_used = initial_ecr_reserve_amount
-            permits_available = permits_available - initial_ecr_reserve_amount
+            self.subsession.ecr_reserve_amount_used = self.session.config['initial_ecr_reserve_amount']
+            permits_available = permits_available - self.session.config['initial_ecr_reserve_amount']
         # If the initial price is below the ecr_trigger but above the reserve, 
         #      remove some allowances from the ecr.
-        elif auction_price < self.session.config['ecr_trigger_price']:
-            supply_equals_bid = any(np.nonzero(supply == auction_price))
-            if supply_equals_bid:
-                removed = permits_available - np.nonzero(supply == auction_price)[0][0] - 1
-            else:
-                removed = permits_available - np.nonzero(supply > auction_price)[0][0] - 2
-            self.subsession.ecr_reserve_amount_used = removed
-            permits_available = permits_available - removed
+#        elif auction_price < self.session.config['ecr_trigger_price']:
+#            initial_ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
+#            supply_equals_bid = any(np.nonzero(supply == auction_price))
+#            if supply_equals_bid:
+#                removed = permits_available - np.nonzero(supply == auction_price)[0][0] - 1
+#            else:
+#                removed = permits_available - np.nonzero(supply > auction_price)[0][0] - 2
+#            self.subsession.ecr_reserve_amount_used = removed
+#        else:
+#            permits_available = permits_available - self.subsession.ecr_reserve_amount_used 
         # Now, assign permits to players by marking bids in bids_df as accepted
-        self.subsession.auction_price = auction_price
         if num_bids > 0:
-            bids_df.accepted = 0  # Only bids at or above the reserve are included in bids_df
-            # If the world is awash in permits...
-            if permits_available >= num_bids:
-                bids_df.accepted = 1
-            # If the auction closes normally with no ties
-            elif auction_price > bids_df.bid.iloc[permits_available]:
-                bids_df.accepted[bids_df.bid > first_rejected_bid] = 1
             # Take care of ties
-            else:
-                bids_df.accepted[bids_df.bid > first_rejected_bid] = 1
-                temp_accepted = int(bids_df.accepted.sum())   # int(bids_df.sum()['accepted'])
-                remaining = permits_available - temp_accepted
+            if first_rejected_bid > 0:
                 count = len(bids_df[bids_df.bid == first_rejected_bid])
+                num_accepted = int(bids_df.accepted[bids_df.bid == first_rejected_bid].sum())   # int(bids_df.sum()['accepted'])
+                # Reset all to zero
+                bids_df.accepted[bids_df.bid == first_rejected_bid] = 0
+                #    remaining = permits_available - temp_accepted
                 rnd = np.random.permutation(count)
-                grab = bids_df.index[bids_df.bid == auction_price].take(rnd)[:remaining]
+                grab = bids_df.index[bids_df.bid == first_rejected_bid].take(rnd)[:num_accepted]
                 bids_df.accepted.loc[grab] = 1
-            # Save bid accepted information to the bid data
+                log = logging.getLogger('permitauctionsapp')
+                log.info('count: %d' % count)
+                log.info('num accepted: %d' % num_accepted)
+                # Save bid accepted information to the bid data
             for bid_record in bid_qs:
                 bid_record.accepted = bids_df.accepted.ix[bids_df.id == bid_record.id].item()
                 bid_record.save()
             # Calculate the total purchases for each player and save to the player record
             self.subsession.number_sold_auction = bids_df.accepted.sum()
-            #purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
-            purchased = bids_df.groupby('pid_in_group',as_index=False).sum()
-            for index,accepted in zip(purchased.pid_in_group,purchased.accepted):
+            purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
+            #purchased = bids_df.groupby('pid_in_group',as_index=False).sum()
+            for index,accepted in zip(purchased.index,purchased.accepted):
                 player = self.group.get_player_by_id(index)
                 purchased_at_auction = 0 if accepted is None else accepted
                 player.permits_purchased_auction = purchased_at_auction
@@ -363,7 +370,7 @@ class Production(Page):
         if net_permits < 0:
             self.player.penalty = net_permits * Constants.penalty_amount
             self.player.money = cash_holdings + self.player.penalty # Penalty is a negative amount
-            self.player.payoff = cash_holdings + self.player.penalty * self.session.config['payout_rate']
+            self.player.payoff = (cash_holdings + self.player.penalty) * self.session.config['payout_rate']
             self.player.permits = 0
         else:
             self.player.permits = self.player.permits - permits_required
