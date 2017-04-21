@@ -127,7 +127,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
             # Bid falls below the supply curve
             if first_rejected_bid == -1:
                 first_rejected_bid = bids.bid[index]
-                price = max(bids.bid[index],supply[index-1])
+                price = bids.bid[index]
                 bids.accepted[index-1] = 1
                 last_positive_bid_index = index - 1
                 log.info('1st rejected bid - last_positive_bid_index: %d' % last_positive_bid_index)

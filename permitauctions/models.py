@@ -88,7 +88,7 @@ class Subsession(BaseSubsession):
                 player.emission_intensity = Constants.emission_intensity_high
                 # TODO: Is this doing what you think it is
                 player_index = ((self.round_number - 1) * num_high_emitters) - 1 + high_index
-                log.info('High: player_index: {0}'.format(player_index))
+                #log.info('High: player_index: {0}'.format(player_index))
                 costs = assign_costs(player,all_costs['high_emitters'],player_index)
             elif player.role() == 'low_emitter':
                 low_index += 1
@@ -96,7 +96,7 @@ class Subsession(BaseSubsession):
                 player.capacity = Constants.production_capacity_low
                 player.emission_intensity = Constants.emission_intensity_low
                 player_index = ((self.round_number - 1) * num_low_emitters) - 1 + low_index
-                log.info('Low: player_index: {0}'.format(player_index))
+                #log.info('Low: player_index: {0}'.format(player_index))
                 costs = assign_costs(player,all_costs['low_emitters'],player_index)
             player.generate_bid_stubs()
             player.generate_unit_stubs(costs)
