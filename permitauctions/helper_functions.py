@@ -143,7 +143,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
                 log.info('pcr_added: %d' % pcr_added)
                 bids.accepted[index-1] = 1
             else:
-                bids[index-1].accepted = 1
+                bids.accepted[index-1] = 1
                 first_rejected_bid = bids.bid[index]
                 price = bids.bid[index]
                 last_positive_bid_index = index - 1
