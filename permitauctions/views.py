@@ -20,6 +20,8 @@ def vars_for_all_templates(self):
     output_price = c(self.subsession.output_price)
     high_output_price = self.session.config['low_output_price'] + self.session.config['high_output_price_increment']
     table_data = make_rounds_table(self.session, Constants, self.subsession)
+    player_payoffs = [p.money * self.session.config['payout_rate'] for p in self.subsession.get_players()]
+    mean_payoff = np.mean(player_payoffs)
     return {
         'permits_available': permits_available,
         'ecr_reserve_amount': ecr_reserve_amount,
@@ -262,8 +264,9 @@ class AuctionWaitPage(WaitPage):
             permits_available = permits_available - self.session.config['initial_ecr_reserve_amount']
         # If the initial price is below the ecr_trigger but above the reserve, 
         #      remove some allowances from the ecr.
-        #elif auction_price == self.session.config['ecr_trigger_price']:
-        #    self.subsession.number_sold_auction = bids_df.accepted.sum()
+        elif auction_price == self.session.config['ecr_trigger_price']:
+            self.subsession.number_sold_auction = bids_df.accepted.sum()
+            self.subsession.ecr_reserve_amount_used = permits_available - self.subsession.number_sold_auction
         #    purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
         #    self.subsession.ecr_reserve_amount_used = permits_available - purchased
 #            initial_ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
@@ -297,7 +300,6 @@ class AuctionWaitPage(WaitPage):
             # Calculate the total purchases for each player and save to the player record
             self.subsession.number_sold_auction = bids_df.accepted.sum()
             purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
-            self.subsession.ecr_reserve_amount_used = permits_available - purchased.accepted[-1]
             #purchased = bids_df.groupby('pid_in_group',as_index=False).sum()
             for index,accepted in zip(purchased.index,purchased.accepted):
                 player = self.group.get_player_by_id(index)
@@ -399,7 +401,8 @@ class FinalResults(Page):
 
     def vars_for_template(self):
         return {
-            'payout': self.player.money * self.session.config['payout_rate']
+            'payout': self.player.money * self.session.config['payout_rate'],
+            'net_payout': self.player.money * self.session.config['payout_rate'] - 6
         }
 
 

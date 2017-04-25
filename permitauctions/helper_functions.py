@@ -57,7 +57,7 @@ def make_supply_schedule(subsession,constants):
     permits_available = subsession.permits_available
     reserve_price = constants.reserve_price
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
-    q_star = max(1,permits_available - ecr_reserve_amount)
+    q_star = max(0,permits_available - ecr_reserve_amount)
     if subsession.session.config['supply_step']:
         # Supply reduction in one big step
         supply_step = np.ones(initial_ecr_reserve_amount)*ecr_trigger_price
@@ -126,7 +126,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
             # Bid falls below the supply curve
             if first_rejected_bid == -1:
                 first_rejected_bid = bids.bid[index]
-                price = bids.bid[index]
+                price = max(bids.bid[index],supply[index-1])
                 bids.accepted[index-1] = 1
                 last_positive_bid_index = index - 1
                 log.info('1st rejected bid - last_positive_bid_index: %d' % last_positive_bid_index)
