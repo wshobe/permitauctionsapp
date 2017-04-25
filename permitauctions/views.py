@@ -262,7 +262,10 @@ class AuctionWaitPage(WaitPage):
             permits_available = permits_available - self.session.config['initial_ecr_reserve_amount']
         # If the initial price is below the ecr_trigger but above the reserve, 
         #      remove some allowances from the ecr.
-#        elif auction_price < self.session.config['ecr_trigger_price']:
+        #elif auction_price == self.session.config['ecr_trigger_price']:
+        #    self.subsession.number_sold_auction = bids_df.accepted.sum()
+        #    purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
+        #    self.subsession.ecr_reserve_amount_used = permits_available - purchased
 #            initial_ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
 #            supply_equals_bid = any(np.nonzero(supply == auction_price))
 #            if supply_equals_bid:
@@ -294,6 +297,7 @@ class AuctionWaitPage(WaitPage):
             # Calculate the total purchases for each player and save to the player record
             self.subsession.number_sold_auction = bids_df.accepted.sum()
             purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
+            self.subsession.ecr_reserve_amount_used = permits_available - purchased.accepted[-1]
             #purchased = bids_df.groupby('pid_in_group',as_index=False).sum()
             for index,accepted in zip(purchased.index,purchased.accepted):
                 player = self.group.get_player_by_id(index)
