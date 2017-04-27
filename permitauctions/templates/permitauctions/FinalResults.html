@@ -9,7 +9,23 @@
 {% block content %}
 
 	<p>You finished the session with {{ player.money }}.</p>
-	<p>As a result, you've earned {{ payout }}.</p><br />
 	
+	<p>As a result, you've earned {{ payout }}.</p>
+	
+	<p>This is {{net_payout}} in addition to the $6 you already have.
+	
+
+{% endblock %}
+
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	p {
+		font-size: 1.1em;
+	}
+	</style>
+
 
 {% endblock %}

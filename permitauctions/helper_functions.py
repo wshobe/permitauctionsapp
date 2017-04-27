@@ -72,23 +72,23 @@ def make_supply_schedule(subsession,constants):
     #assert False
     return supply
     
-def calculate_auction_price(these_bids,supply_curve,subsession,constants):
+def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
     # these_bids is the bids_df pd data frame
     log = logging.getLogger('permitauctionsapp')
     log.info('In function: calculate_auction_price')
     bids = these_bids.sort(['bid'],ascending=False)
     num_bids = len(bids)
-    reserve_price = constants.reserve_price
     supply = supply_curve[:num_bids]
     ecr_reserve_amount = subsession.session.config['initial_ecr_reserve_amount']
-    pcr_reserve_amount = subsession.session.config['price_containment_reserve_amount'] 
+    pcr_reserve_amount = subsession.session.config['price_containment_reserve_amount']
+    ecr_trigger_price = subsession.session.config['ecr_trigger_price']
     permits_available = subsession.permits_available
     q_star = permits_available - ecr_reserve_amount
     max_permits = permits_available + pcr_reserve_amount
     # Take care of the improbable "no bids" case
     # This actually cannot happen. The function is never called in the no bids case.
     if len(bids) == 0:
-        return {'price':reserve_price,'first_rejected_bid':reserve_price,'accepted': [] }
+        return {'price':reserve_price,'first_rejected_bid':reserve_price,'accepted': [],'ecr_reserve_amount_used': 0 }
     # If the number of bids is less than the number available accept them all and return the reserve price.
     '''
         This is the normal case. Loop through the bids from high to low until the supply 
@@ -98,6 +98,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
     price = -1
     last_positive_bid_index = -1
     pcr_added = 0
+    ecr_reserve_amount_used = 0
     for index, bid_record in enumerate(bids.bid,1):
         if index == num_bids:
             # We have gone through all of the bids. There is no "next" bid.
@@ -107,7 +108,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
                 first_rejected_bid = -1
                 price = supply[index-1]
                 if last_positive_bid_index >= q_star -1 and last_positive_bid_index < permits_available - 1:
-                    price = subsession.session.config['ecr_trigger_price']
+                    price = ecr_trigger_price
                 elif index >= permits_available + 1 and index < max_permits - 1:
                     pcr_added += 1
                 last_positive_bid_index = index - 1
@@ -149,17 +150,19 @@ def calculate_auction_price(these_bids,supply_curve,subsession,constants):
                 log.info('PCR range - last_positive_bid_index: %d' % last_positive_bid_index)
                 log.info('PCR range - price: {0:.2f}'.format(price))
     if last_positive_bid_index < q_star - 1:
-        subsession.ecr_reserve_amount_used = ecr_reserve_amount
+        ecr_reserve_amount_used = ecr_reserve_amount
+        #subsession.permits_available = permits_available - ecr_reserve_amount
         log.info('ECR all - last_positive_bid_index: %d' % last_positive_bid_index)
-    if last_positive_bid_index >= q_star -1 and last_positive_bid_index < permits_available - 1:
-        subsession.ecr_reserve_amount_used = permits_available - last_positive_bid_index - 2
+    elif last_positive_bid_index >= q_star -1 and last_positive_bid_index < permits_available - 1:
+        ecr_reserve_amount_used = permits_available - last_positive_bid_index - 2
+        #subsession.permits_available = permits_available - self.subsession.ecr_reserve_amount_used 
         log.info('ECR range - last_positive_bid_index: %d' % last_positive_bid_index)
-    elif pcr_added > 0:
-        subsession.pcr_amount_added = pcr_added
-        subsession.permits_available = permits_available + pcr_added
-        log.info('PCR range - permits_available + pcr_added: {0}'.format(permits_available + pcr_added))
     bids = bids.sort_index()
-    return {'price':price,'first_rejected_bid':first_rejected_bid,'accepted':bids.accepted}
+    return {'price':price,
+            'first_rejected_bid':first_rejected_bid,
+            'accepted':bids.accepted,
+            'pcr_amount_added': pcr_added,
+            'ecr_reserve_amount_used':ecr_reserve_amount_used}
 
 
 def calculate_auction_price1(these_bids,supply_curve,subsession,constants):

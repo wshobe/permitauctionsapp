@@ -8,7 +8,7 @@ import operator
 import numpy as np
 import logging
 
-author = 'Derek Wu (derek.x.wu@gmail.com, dxw7za)'
+author = 'Derek Wu (derek.x.wu@gmail.com, dxw7za) and Bill Shobe (shobe@virginia.edu)'
 
 doc = """
 Permit trading with an emission containment reserve

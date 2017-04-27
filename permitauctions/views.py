@@ -214,6 +214,7 @@ class AuctionWaitPage(WaitPage):
     """
     def after_all_players_arrive(self):
         permits_available = self.subsession.permits_available
+        ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
         self.subsession.ecr_reserve_amount_used = 0
         # Get all bid records for all players in this round and put the records in a dataframe
         supply = make_supply_schedule(self.subsession,Constants)
@@ -221,63 +222,39 @@ class AuctionWaitPage(WaitPage):
         num_bids = len(bid_qs)
         if num_bids > 0:
             bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id', 'bid', 'accepted', 'player_id', 'pid_in_group')))
-            auction_close = calculate_auction_price(bids_df,supply,self.subsession,Constants)
+            auction_close = calculate_auction_price(bids_df,supply,self.subsession,Constants.reserve_price)
             auction_price = auction_close['price']
             log = logging.getLogger('permitauctionsapp')
             log.info('aapa auction_price: {0:.2f}'.format(auction_price))
             permits_available = self.subsession.permits_available
             first_rejected_bid = auction_close['first_rejected_bid']
             bids_df.accepted = auction_close['accepted']
+            self.subsession.pcr_amount_added = auction_close['pcr_amount_added']
+            self.subsession.ecr_reserve_amount_used = auction_close['ecr_reserve_amount_used']
+            self.subsession.number_sold_auction = bids_df.accepted.sum()
+            log.info('aapa permits_available: {}'.format(permits_available))
+            log.info('aapa ecr_reserve_amount_used: {}'.format(auction_close['ecr_reserve_amount_used']))
+            log.info('aapa first_rejected_bid: {0:.2f}'.format(auction_close['first_rejected_bid']))
+            log.info('aapa pcr_amount_added: {}'.format(auction_close['pcr_amount_added']))
         else:
             auction_price = Constants.reserve_price
             first_rejected_bid = Constants.reserve_price
-        #self.subsession.ecr_reserve_amount_used = 0
+            self.subsession.ecr_reserve_amount_used = ecr_reserve_amount
+            self.subsession.number_sold_auction = 0
+            for player in self.subsession.get_players():
+                player.permits_purchased_auction = 0
         self.subsession.auction_price = auction_price
         pcr_trigger = self.session.config['price_containment_trigger']
         pcr_available = self.session.config['price_containment_reserve_amount']
-        if num_bids == 0:
-            self.subsession.number_sold_auction = 0
-            self.subsession.auction_price = auction_price
-            for player in self.subsession.get_players():
-                player.permits_purchased_auction = 0
-        # This next block is for implementing the price containment reserve.
-        # This should be made optional based on settings
-        # If the initial price is above the upper limit, release some of the pcr
-            '''
-        elif auction_price > pcr_trigger:
-            #assert False, "auction_price > pcr_trigger"
-            pcr_added = 0
-            while (auction_price > pcr_trigger and pcr_added < pcr_available):
-                bid_index = permits_available + pcr_added
-                if bid_index >= len(bids_df):
-                    auction_price = pcr_trigger
-                else:
-                    auction_price = bids_df.bid[bid_index]
-                pcr_added += 1
-            self.subsession.pcr_amount_added = pcr_added
-            permits_available = permits_available + pcr_added
-            self.subsession.auction_price = auction_price
-            # Price is at the reserve price then all ecr has been removed
-            '''
-        elif auction_price == Constants.reserve_price:
-            self.subsession.ecr_reserve_amount_used = self.session.config['initial_ecr_reserve_amount']
-            permits_available = permits_available - self.session.config['initial_ecr_reserve_amount']
+        #if auction_price == Constants.reserve_price:
+        #    self.subsession.ecr_reserve_amount_used = self.session.config['initial_ecr_reserve_amount']
+            #permits_available = permits_available - self.session.config['initial_ecr_reserve_amount']
         # If the initial price is below the ecr_trigger but above the reserve, 
         #      remove some allowances from the ecr.
-        elif auction_price == self.session.config['ecr_trigger_price']:
-            self.subsession.number_sold_auction = bids_df.accepted.sum()
-            self.subsession.ecr_reserve_amount_used = permits_available - self.subsession.number_sold_auction
+        #if auction_price == self.session.config['ecr_trigger_price']:
+        #    self.subsession.ecr_reserve_amount_used = permits_available - self.subsession.number_sold_auction
         #    purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
         #    self.subsession.ecr_reserve_amount_used = permits_available - purchased
-#            initial_ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']
-#            supply_equals_bid = any(np.nonzero(supply == auction_price))
-#            if supply_equals_bid:
-#                removed = permits_available - np.nonzero(supply == auction_price)[0][0] - 1
-#            else:
-#                removed = permits_available - np.nonzero(supply > auction_price)[0][0] - 2
-#            self.subsession.ecr_reserve_amount_used = removed
-#        else:
-#            permits_available = permits_available - self.subsession.ecr_reserve_amount_used 
         # Now, assign permits to players by marking bids in bids_df as accepted
         if num_bids > 0:
             # Take care of ties
@@ -290,9 +267,9 @@ class AuctionWaitPage(WaitPage):
                 rnd = np.random.permutation(count)
                 grab = bids_df.index[bids_df.bid == first_rejected_bid].take(rnd)[:num_accepted]
                 bids_df.accepted.loc[grab] = 1
-                log = logging.getLogger('permitauctionsapp')
-                log.info('count: %d' % count)
-                log.info('num accepted: %d' % num_accepted)
+                #log = logging.getLogger('permitauctionsapp')
+                #log.info('count: %d' % count)
+                #log.info('num accepted: %d' % num_accepted)
                 # Save bid accepted information to the bid data
             for bid_record in bid_qs:
                 bid_record.accepted = bids_df.accepted.ix[bids_df.id == bid_record.id].item()
