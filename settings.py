@@ -162,9 +162,9 @@ SESSION_CONFIGS = [
     'app_sequence': ['permitauctions'],
     'random_start_order': True,
     'permits_persist': True,
-    'initial_cap': 64,     #62
+    'initial_cap': 66,     #62
     'cap_decrement': 1,
-    'initial_ecr_reserve_amount': 14,    #12
+    'initial_ecr_reserve_amount': 16,    #12
     'ecr_trigger_price': 8,
     'ecr_reserve_increment': 3,
     'num_low_emitters': 6,
@@ -172,8 +172,8 @@ SESSION_CONFIGS = [
     'supply_step': True,
     'random_seed': 113,
     'output_price_random_seed': 1283,
-    'show_instructions': False,
-    'last_round': 5,         #30
+    'show_instructions': True,
+    'last_round': 30,         #30
     'low_emitter_min_cost': 10,
     'low_emitter_max_cost': 28,
     'high_emitter_min_cost': 1,
@@ -182,7 +182,7 @@ SESSION_CONFIGS = [
     'high_output_price_increment': 10,
     'payout_rate': 0.03,
     'price_containment_trigger': 12,
-    'price_containment_reserve_amount': 8 # Max permits to add if price over containment trigger
+    'price_containment_reserve_amount': 10 
      }
 ]
 
