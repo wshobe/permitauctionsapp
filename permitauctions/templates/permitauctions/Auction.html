@@ -53,32 +53,44 @@
 	{% endif %}
 	
 	
-	<h3>Enter your bids:</h3>
-    <table style="border: 1px solid black;;  padding: 10px; align: center;">
-        <tr><th style=" padding: 10px; text-align: center;">Capacity<br />Unit</th>
-			<th style=" padding: 10px; align: center;">Output<br />price</th>
-			<th style=" padding: 10px; align: center;">Production<br />Cost</th>
-			<th style=" padding: 10px; align: center;">Unit<br />Value</th>
-			<th style=" padding: 10px; align: center;">Permit Value<br />(for this<br />capacity unit)</th>
-			<th style=" padding: 10px; align: center;">Enter Bids
-				{%if player.emission_intensity > 1 %}<br /><span style="font-size: 12px;">
-					(Each bid is for {{player.emission_intensity}} permits, so<br />
-					your cost will be twice the bid amount.)</span>
-				{% endif %}</th>
-		</tr>
-
+	<table style="border: none;  align: center; margin-right: 20px;">
+		<tr style="border: none;"><td style="border: none;">
+    		<div style="margin-right: 2cm;"><table style="border: 1px solid black;;  padding: 10px; align: center;">
+        		<tr>
+					<th style=" padding: 10px; text-align: center;">Capacity<br />Unit</th>
+					<th style=" padding: 10px; align: center;">Output<br />price</th>
+					<th style=" padding: 10px; align: center;">Production<br />Cost</th>
+					<th style=" padding: 10px; align: center;">Unit<br />Value</th>
+					<th style=" padding: 10px; align: center;">Permit Value<br />(for this<br />capacity unit)</th>
+				</tr>
         {% for field, plant in bid_table %}
-
-        <tr><td style=" padding: 10px; text-align: center;">{{ forloop.counter }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.3 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.0 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.1 }}</td>
-			<td style=" padding: 10px; text-align: center;">{{ plant.2 }}</td>
-			<td style=" padding: 10px; text-align: center;"><table style="border-style: none;"> <tr  style="border-style: none;">
-				<td  style="border-style: none;">{{ field }}</td></tr> </table></td>
-		</tr>
+        		<tr><td style=" padding: 10px; text-align: center;">{{ forloop.counter }}</td>
+					<td style=" padding: 10px; text-align: center;">{{ plant.3 }}</td>
+					<td style=" padding: 10px; text-align: center;">{{ plant.0 }}</td>
+					<td style=" padding: 10px; text-align: center;">{{ plant.1 }}</td>
+					<td style=" padding: 10px; text-align: center;">{{ plant.2 }}</td>
+				</tr>
         {% endfor %}
-
+			</table></div>
+		</td><td style="border: none;">
+			
+    		<table style="border: 1px solid black;;  padding: 10px; align: center;">
+        		<tr>
+					<th style=" padding: 10px; align: center;"><h4>Enter Bids</h4>
+				{%if player.emission_intensity > 1 %}<span style="font-size: 14px;">
+					(Each bid is for {{player.emission_intensity}} permits, <br />so
+					your cost will be <br />twice the bid amount.)</span>
+				{% endif %}</th>
+				</tr>
+        {% for field in bid_entries %}
+			<tr align="center">
+			<td align="center" style=" padding: 10px;"><table style="border-style: none; "> <tr  style="border-style: none; ">
+				<td align="center" style="border-style: none;" >{{ field }}</td></tr> </table></td>
+			</tr>
+        {% endfor %}
+			</table>
+		</td>
+	</tr>
     </table><br />
 
 

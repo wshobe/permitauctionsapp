@@ -4,23 +4,20 @@ from otree.api import Currency as c
 import logging
 
 
-def make_rounds_table(session,constants, subsession):
+def make_rounds_table(session,subsession):
     '''Create the data structure that is used to construct the running table of round information:
     round numbers, cap for each round, aggregate production capacity, output_price, auction price, ecr_used'''
     num_rounds = session.config['last_round']
     this_round = subsession.round_number
-    num_low_emitters = session.config['num_low_emitters']
-    num_high_emitters = session.config['num_high_emitters']
-    round_numbers = list(range(1,num_rounds+1))
-    period_caps = [session.config['initial_cap'] - (round-1)*session.config['cap_decrement'] for round in round_numbers]
+    #round_numbers = list(range(1,num_rounds+1))
+    round_numbers = np.arange(1,num_rounds+1)
     output_prices = list(map(c,session.vars['output_prices']))[:num_rounds]     # In currency
     auction_prices_none = [None]*num_rounds
     auction_prices = [s.auction_price for s in subsession.in_all_rounds()]   # [:num_rounds]
     auction_prices = auction_prices + auction_prices_none[len(auction_prices):]
     #assert False
-    max_low_emitter_demand = constants.production_capacity_low * constants.emission_intensity_low * session.config['num_low_emitters']
-    max_high_emitter_demand = constants.production_capacity_high * constants.emission_intensity_high * session.config['num_high_emitters']
-    full_capacity_permit_demand = [max_low_emitter_demand + max_high_emitter_demand] * num_rounds
+    period_caps = session.vars['period_caps']
+    full_capacity_permit_demand = session.vars['full_capacity_permit_demand']
     table_data = pd.DataFrame(
         {
             'round_numbers': round_numbers,
@@ -99,14 +96,14 @@ def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
     last_positive_bid_index = -1
     pcr_added = 0
     ecr_reserve_amount_used = 0
-    for index, bid_record in enumerate(bids.bid,1):
+    for index, bid in enumerate(bids.bid,1):
         if index == num_bids:
             # We have gone through all of the bids. There is no "next" bid.
             if first_rejected_bid == -1:
                 # No bids are below the supply curve.
                 bids.accepted[index-1] = 1
                 first_rejected_bid = -1
-                price = supply[index-1]
+                price = max(bid,supply[index-1])
                 if last_positive_bid_index >= q_star -1 and last_positive_bid_index < permits_available - 1:
                     price = ecr_trigger_price
                 elif index >= permits_available + 1 and index < max_permits - 1:
@@ -153,8 +150,8 @@ def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
         ecr_reserve_amount_used = ecr_reserve_amount
         #subsession.permits_available = permits_available - ecr_reserve_amount
         log.info('ECR all - last_positive_bid_index: %d' % last_positive_bid_index)
-    elif last_positive_bid_index >= q_star -1 and last_positive_bid_index < permits_available - 1:
-        ecr_reserve_amount_used = permits_available - last_positive_bid_index - 2
+    elif last_positive_bid_index >= q_star -1 and last_positive_bid_index <= permits_available - 1:
+        ecr_reserve_amount_used = permits_available - last_positive_bid_index - 1
         #subsession.permits_available = permits_available - self.subsession.ecr_reserve_amount_used 
         log.info('ECR range - last_positive_bid_index: %d' % last_positive_bid_index)
     bids = bids.sort_index()

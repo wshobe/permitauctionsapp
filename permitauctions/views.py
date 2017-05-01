@@ -16,15 +16,13 @@ def vars_for_all_templates(self):
     round_number = self.subsession.round_number
     permits_available = self.subsession.permits_available
     num_participants = self.session.config['num_high_emitters'] + self.session.config['num_low_emitters']
-    ecr_reserve_amount = self.session.config['initial_ecr_reserve_amount']  # compliance reserve
     output_price = c(self.subsession.output_price)
     high_output_price = self.session.config['low_output_price'] + self.session.config['high_output_price_increment']
-    table_data = make_rounds_table(self.session, Constants, self.subsession)
-    player_payoffs = [p.money * self.session.config['payout_rate'] for p in self.subsession.get_players()]
-    mean_payoff = np.mean(player_payoffs)
+    table_data = make_rounds_table(self.session, self.subsession)
+    #player_payoffs = [p.money * self.session.config['payout_rate'] for p in self.subsession.get_players()]
+    #mean_payoff = np.mean(player_payoffs)
     return {
         'permits_available': permits_available,
-        'ecr_reserve_amount': ecr_reserve_amount,
         'output_price': output_price,
         'high_output_price': high_output_price,
         'num_participants': num_participants,
@@ -159,12 +157,17 @@ class Auction(Page):
         #assert len(bid_qs) == Constants.num_bids_per_round
         bids_formset = BidFormSet(queryset=bid_qs)
         bid_fields = [field for field in [form for form in bids_formset]]
+        if self.player.role() == 'high_emitter':
+            num_bids = Constants.num_bids_high
+        else:
+            num_bids = Constants.num_bids_low
         total_net_value = sum([output_price - cost for cost in costs])
         #assert False, "permit value {:f}".format(test)
         return {
             'bid_formset': bids_formset,
             'cost_list': cost_list,
             'bid_table': zip(bid_fields, cost_list),
+            'bid_entries': bid_fields[:num_bids],
             'max_bid_dollar_value': self.player.money + total_net_value
         }
 
@@ -277,7 +280,6 @@ class AuctionWaitPage(WaitPage):
             # Calculate the total purchases for each player and save to the player record
             self.subsession.number_sold_auction = bids_df.accepted.sum()
             purchased = bids_df.groupby('pid_in_group')[['accepted']].sum()
-            #purchased = bids_df.groupby('pid_in_group',as_index=False).sum()
             for index,accepted in zip(purchased.index,purchased.accepted):
                 player = self.group.get_player_by_id(index)
                 purchased_at_auction = 0 if accepted is None else accepted
@@ -291,7 +293,6 @@ class AuctionWaitPage(WaitPage):
     def vars_for_template(self):
         bid_qs = [(dec.pk, dec.bid) for dec in self.player.bid_set.all()]
         return {'bid_list': bid_qs}
-
 
 class AuctionResults(Page):
     def vars_for_template(self):

@@ -37,8 +37,8 @@ class Constants(BaseConstants):
     reserve_price = c(5)  # absolutely no bids below reserve price; don't even let them try
     maximum_bid = c(30)
     bid_price_increment = c(0.5)
-    num_bids_high = 4
-    num_bids_low = 4
+    num_bids_high = 5
+    num_bids_low = 5
 
     penalty_amount = c(35)  # Cost of running a plant without necessary permits
 
@@ -61,7 +61,6 @@ class Subsession(BaseSubsession):
         self.permits_available = self.session.config['initial_cap'] - (self.round_number - 1) * self.session.config['cap_decrement']
         num_low_emitters = self.session.config['num_low_emitters']
         num_high_emitters = self.session.config['num_high_emitters']
-        log = logging.getLogger('permitauctionsapp')
 
         if self.round_number == 1:
             self.group_randomly()
@@ -70,8 +69,22 @@ class Subsession(BaseSubsession):
             Costs change in each round
              Pass only the session and Constants objects to the cost function 
             """
+            initial_cap = self.session.config['initial_cap']
+            cap_decrement = self.session.config['cap_decrement']
+            num_rounds = self.session.config['last_round']
+            round_numbers = np.arange(1,num_rounds+1)
+            max_low_emitter_demand = Constants.production_capacity_low * Constants.emission_intensity_low * num_low_emitters
+            max_high_emitter_demand = Constants.production_capacity_high * Constants.emission_intensity_high * num_high_emitters
+            log = logging.getLogger('permitauctionsapp')
+            log.info('before_session_starts: {}'.format(max_high_emitter_demand))
+            log.info('before_session_starts: {}'.format(max_low_emitter_demand))
             self.session.vars['costs'] = costs1(self.session,Constants)
             self.session.vars['output_prices'] = generate_output_prices(self.session,Constants)
+            self.session.vars['max_low_emitter_demand'] = max_low_emitter_demand
+            self.session.vars['max_high_emitter_demand'] = max_high_emitter_demand
+            self.session.vars['full_capacity_permit_demand'] = [max_low_emitter_demand + max_high_emitter_demand] * num_rounds
+            self.session.vars['period_caps'] = [initial_cap - (round-1)*cap_decrement for round in round_numbers]
+            
         all_costs = self.session.vars['costs']
         self.output_price = self.session.vars['output_prices'][self.round_number - 1]
         high_index = -1
@@ -161,11 +174,13 @@ class Player(BasePlayer):
             bid = self.bid_set.create() # create a new bid object as part of the player's bid set
             bid.round = self.subsession.round_number
             bid.pid_in_group = self.id_in_group
+            bid.subsession_id = self.subsession.id
             bid.save()   # important: save to DB!
             if self.role() == 'high_emitter':
                 bid2 = self.bid_set.create() # Double the bids for high emitters
                 bid2.round = self.subsession.round_number
                 bid2.pid_in_group = self.id_in_group
+                bid2.subsession_id = self.subsession.id
                 bid2.save()
 
     def generate_unit_stubs(self, player_costs):
@@ -181,6 +196,7 @@ class Player(BasePlayer):
             unit = self.unit_set.create() # add new production unit to set
             unit.unit_num = i
             unit.cost = player_costs[i]
+            unit.subsession_id = self.subsession.id
             unit.save() # important: save to DB!
 
 
@@ -190,6 +206,7 @@ class Bid(Model):  # inherits from Django's base "Model"
     bid = models.CurrencyField(choices=BID_CHOICES)
     accepted = models.PositiveIntegerField()
     pid_in_group = models.PositiveIntegerField()
+    subsession_id = models.PositiveIntegerField()
     player = ForeignKey(Player)    # creates 1:m relation -> this bid was made by a certain player
 
 
@@ -197,4 +214,6 @@ class Unit(Model):  # inherits from Django's base "Model"
     unit_num = models.IntegerField()
     cost = models.CurrencyField()
     unit_used = models.PositiveIntegerField()
-    player = ForeignKey(Player)  # creates 1:m relation -> this bid was made by a certain player
+    subsession_id = models.PositiveIntegerField()
+    player = ForeignKey(Player)
+    
