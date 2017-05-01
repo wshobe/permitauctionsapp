@@ -12,8 +12,8 @@
 <ul>
 	<li>Series of periods: There will be {{session.config.last_round}} periods in this session, each with an auction followed by a production decision.</li>
 	<li>You can make as many bids as the bid entry form allows, which will be {{Constants.num_bids_low}} for low users and {{Constants.num_bids_high}} for high users. For high users, each bid will be for two permits, reflecting the greater need for permits to run these units.</li>
-	<li>Production decision: After you know how many permits you have to work with, you will decide which capacity units to operate. This determines how many permits will be needed to meet the "compliance" obligation.</li>
-	<li>Permits may be used for production in the current period or saved for use in later periods. You may wish to hold permits for later periods, if you think that they will be more valuable then. There is no limit to the number of permits you may hold. Permits will have no value at the end of the last period.</li>
+	<li>Production decision: After you know how many permits you have to work with, you will decide which capacity units to operate. This determines how many permits will be needed to meet the "compliance" obligation. Producing and selling output is the only way to make money in this market.</li>
+	<li>Permits may be used for production in the current period or saved for use in later periods. You may wish to hold permits for later periods, if you think that they will be more valuable in the future when fewer permits are available at auction. There is no limit to the number of permits you may hold. Permits will have no value at the end of the last period.</li>
 	{% if Constants.must_run > 0 %}<li>Must-serve capacity: In each period, all producers must produce at least 
 		[[Constants.must_run]] unit of output.</li>{% endif%}
 	<li>The penalty for producing output without the necessary permits is {{Constants.penalty_amount}} per missing permit. (Very expensive!)</li>

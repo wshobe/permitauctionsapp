@@ -162,9 +162,9 @@ SESSION_CONFIGS = [
     'app_sequence': ['permitauctions'],
     'random_start_order': True,
     'permits_persist': True,
-    'initial_cap': 62,     #62
+    'initial_cap': 64,     #62
     'cap_decrement': 1,
-    'initial_ecr_reserve_amount': 12,    #12
+    'initial_ecr_reserve_amount': 14,    #12
     'ecr_trigger_price': 8,
     'ecr_reserve_increment': 3,
     'num_low_emitters': 6,
