@@ -84,6 +84,8 @@ class Subsession(BaseSubsession):
             self.session.vars['max_high_emitter_demand'] = max_high_emitter_demand
             self.session.vars['full_capacity_permit_demand'] = [max_low_emitter_demand + max_high_emitter_demand] * num_rounds
             self.session.vars['period_caps'] = [initial_cap - (round-1)*cap_decrement for round in round_numbers]
+            self.session.vars['output_prices_for_table'] = list(map(c,self.session.vars['output_prices']))[:num_rounds]
+            self.session.vars['round_numbers'] = np.arange(1,num_rounds+1)
             
         all_costs = self.session.vars['costs']
         self.output_price = self.session.vars['output_prices'][self.round_number - 1]

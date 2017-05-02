@@ -18,7 +18,11 @@ def vars_for_all_templates(self):
     num_participants = self.session.config['num_high_emitters'] + self.session.config['num_low_emitters']
     output_price = c(self.subsession.output_price)
     high_output_price = self.session.config['low_output_price'] + self.session.config['high_output_price_increment']
-    table_data = make_rounds_table(self.session, self.subsession)
+    table_data = make_rounds_table(self.subsession,
+        self.session.vars['output_prices_for_table'],
+        self.session.vars['round_numbers'],
+        self.session.vars['period_caps'],
+        self.session.vars['full_capacity_permit_demand'])
     #player_payoffs = [p.money * self.session.config['payout_rate'] for p in self.subsession.get_players()]
     #mean_payoff = np.mean(player_payoffs)
     return {
@@ -227,18 +231,18 @@ class AuctionWaitPage(WaitPage):
             bids_df = pd.DataFrame(list(bid_qs.order_by('-bid').values('id', 'bid', 'accepted', 'player_id', 'pid_in_group')))
             auction_close = calculate_auction_price(bids_df,supply,self.subsession,Constants.reserve_price)
             auction_price = auction_close['price']
-            log = logging.getLogger('permitauctionsapp')
-            log.info('aapa auction_price: {0:.2f}'.format(auction_price))
+            #log = logging.getLogger('permitauctionsapp')
+            #log.info('aapa auction_price: {0:.2f}'.format(auction_price))
             permits_available = self.subsession.permits_available
             first_rejected_bid = auction_close['first_rejected_bid']
             bids_df.accepted = auction_close['accepted']
             self.subsession.pcr_amount_added = auction_close['pcr_amount_added']
             self.subsession.ecr_reserve_amount_used = auction_close['ecr_reserve_amount_used']
             self.subsession.number_sold_auction = bids_df.accepted.sum()
-            log.info('aapa permits_available: {}'.format(permits_available))
-            log.info('aapa ecr_reserve_amount_used: {}'.format(auction_close['ecr_reserve_amount_used']))
-            log.info('aapa first_rejected_bid: {0:.2f}'.format(auction_close['first_rejected_bid']))
-            log.info('aapa pcr_amount_added: {}'.format(auction_close['pcr_amount_added']))
+            #log.info('aapa permits_available: {}'.format(permits_available))
+            #log.info('aapa ecr_reserve_amount_used: {}'.format(auction_close['ecr_reserve_amount_used']))
+            #log.info('aapa first_rejected_bid: {0:.2f}'.format(auction_close['first_rejected_bid']))
+            #log.info('aapa pcr_amount_added: {}'.format(auction_close['pcr_amount_added']))
         else:
             auction_price = Constants.reserve_price
             first_rejected_bid = Constants.reserve_price
