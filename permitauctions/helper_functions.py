@@ -61,7 +61,7 @@ def make_supply_schedule(subsession,constants):
         supply_step = np.ones(initial_ecr_reserve_amount)*ecr_trigger_price
     else:
         #Smooth linear supply reduction
-        supply_step = np.linspace(float(reserve_price), ecr_trigger_price,num = ecr_reserve_amount,endpoint=True,retstep=True)
+        supply_step = np.linspace(float(reserve_price)+0.5, ecr_trigger_price,num = ecr_reserve_amount,endpoint=True,retstep=True)
         step_size = supply_step[1]
         supply_step = (supply_step[0]*2).round()/2
         #assert False
