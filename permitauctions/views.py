@@ -135,7 +135,7 @@ class Instructions4(Page):
             num_bids = Constants.num_bids_low
         return {
             'num_rounds': Constants.num_rounds,
-            'payout_percent': payout_rate*100,
+            'payout_percent': self.session.config['payout_rate']*100,
             'player_type': player_type,
             'num_bids': num_bids,
             'initial_cash_endowment': self.player.money
