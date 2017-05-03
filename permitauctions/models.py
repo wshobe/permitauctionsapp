@@ -144,7 +144,7 @@ class Player(BasePlayer):
     computing_ID = models.CharField()
     money = models.CurrencyField()
     permits = models.PositiveIntegerField(initial=0)
-    starting_permits = models.PositiveIntegerField(initial=0)
+    #starting_permits = models.PositiveIntegerField(initial=0)
     capacity = models.PositiveIntegerField()
     emission_intensity = models.PositiveIntegerField()
     permits_purchased_auction = models.PositiveIntegerField()

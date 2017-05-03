@@ -46,7 +46,7 @@ class Signin(Page):
             for player in self.subsession.get_players():
                 old_player = player.in_previous_rounds()[-1]
                 player.money = old_player.money
-                player.starting_permits = old_player.permits
+                #player.starting_permits = old_player.permits
                 player.permits = old_player.permits
                 player.first_name = old_player.first_name
                 player.last_name = old_player.last_name
