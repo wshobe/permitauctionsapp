@@ -169,7 +169,7 @@ SESSION_CONFIGS = [
     'ecr_reserve_increment': 3,
     'num_low_emitters': 6,
     'num_high_emitters': 6,
-    'supply_step': True,
+    'supply_step': False,
     'random_seed': 113,
     'output_price_random_seed': 1283,
     'show_instructions': True,
@@ -180,7 +180,7 @@ SESSION_CONFIGS = [
     'high_emitter_max_cost': 28,
     'low_output_price': 30,
     'high_output_price_increment': 10,
-    'payout_rate': 0.03,
+    'payout_rate': 0.025,
     'price_containment_trigger': 12,
     'price_containment_reserve_amount': 10 
      }
