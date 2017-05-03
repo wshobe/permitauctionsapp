@@ -119,16 +119,21 @@ class Subsession(BaseSubsession):
             #player.generate_unit_stubs(self.session.vars['costs'][player.role()][player_index])
 
     def vars_for_admin_report(self):
-        money = sorted([p.money for p in self.get_players()])
-        for p in self.get_players():
-            p.payoff = p.money * self.session.config['payout_rate']
+        #for p in self.get_players():
+        #    bids = p.bid_set.all().filter(bid__isnull=False).order_by('-bid').values('bid', 'accepted','pid_in_group')
+        #    'bids': [(index, bid['accepted'], bid['bid']) for index, bid in enumerate(bids)],
+        #config = {key: value for key, value in self.session.config.items()}
+        #assert False
         payoffs = [p.money * self.session.config['payout_rate'] for p in self.get_players()]
+        players = [p for p in self.get_players()]
         mean = np.mean(payoffs)
         #if self.round_number == 1:
         #    all_costs = self.session.vars['costs']
         #    output_prices = repeat(self.session.vars['output_prices'],48)
         #    net_value = sort(list(map(operator.sub,output_prices, all_costs)), reverse=True)
-        return {'money': money,'payoffs':payoffs,'mean':mean}
+        return {'payoffs':payoffs,
+                'players': players,
+                'mean':mean}
 
 class Group(BaseGroup):
     pass
@@ -139,11 +144,11 @@ class Player(BasePlayer):
     computing_ID = models.CharField()
     money = models.CurrencyField()
     permits = models.PositiveIntegerField(initial=0)
+    starting_permits = models.PositiveIntegerField(initial=0)
     capacity = models.PositiveIntegerField()
     emission_intensity = models.PositiveIntegerField()
     permits_purchased_auction = models.PositiveIntegerField()
     penalty = models.CurrencyField()
-
     # Need to make the choices array dynamic 
     production_amount = models.PositiveIntegerField(min=Constants.must_run, max=4, choices=range(Constants.must_run,Constants.production_capacity_low+1))
 

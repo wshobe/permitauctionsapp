@@ -109,7 +109,7 @@ def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
                 first_rejected_bid = -1
                 price = supply[index-1]
                 if last_positive_bid_index >= q_star -1 and last_positive_bid_index < permits_available - 1:
-                    price = supply[index-1]
+                    price = max(bids.bid[index],supply[index-1])
                 elif index >= permits_available + 1 and index < max_permits - 1:
                     pcr_added += 1
                 last_positive_bid_index = index - 1

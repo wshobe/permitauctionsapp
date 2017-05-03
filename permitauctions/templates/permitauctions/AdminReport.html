@@ -1,11 +1,38 @@
-<p>Here is the sorted list of player money in round {{ subsession.round_number }}</p>
+{% if subsession.round_number == 1 %}
 
-<ul>
-    {% for money in money %}
-        <li>{{ money }}</li>
+<table style="border: 1px solid black; border-collapse: collapse;font-size: 1em;">
+{% for key,value in session.config.items %}  
+	<tr style="border: 1px solid black;">
+		<td style="border: 1px solid black;">{{key}}</td>
+		<td style="border: 1px solid black;">{{value}}</td>
+	</tr>
+{% endfor %}
+</table>	
+{% endif %} 
+
+<h4> Player information </h4>
+<table style="border: 1px solid black; border-collapse: collapse;font-size: 1em;">
+	<tr style="border: 1px solid black;">
+		<th style="border: 1px solid black;">id in group</th>
+		<th style="border: 1px solid black;">money</th>
+		<th style="border: 1px solid black;">starting permits</th>
+		<th style="border: 1px solid black;">purchased permits</th>
+		<th style="border: 1px solid black;">production</th>
+		<th style="border: 1px solid black;">permits</th>
+	</tr>
+    {% for player in players %}
+	<tr>
+		<td style="border: 1px solid black; "> {{player.id_in_group}}</td>
+		<td style="border: 1px solid black;">{{player.money}}</td>
+		<td style="border: 1px solid black;">{{player.starting_permits}}</td>
+		<td style="border: 1px solid black;">{{player.permits_purchased_auction}}</td>
+		<td style="border: 1px solid black;">{{player.production_amount}}</td>
+		<td style="border: 1px solid black;">{{player.permits}}</td>
+	</tr>
     {% endfor %}
-</ul>
-<h3> Payoffs</h3>
+</table>	
+
+<h4> Payoffs - round {{ subsession.round_number }}</h4>
 
 <ul>
     {% for payoff in payoffs %}
@@ -14,3 +41,22 @@
 </ul>
 
 Mean payoff: {{ mean }}
+
+
+{% block styles %}
+
+    <!-- define a style -->
+	<style>
+	th, td {
+	    padding: 5px;
+	    text-align: left;
+	}
+	p {
+	    font-family: verdana;
+	    font-size: 1em;
+	}
+	</style>
+
+    <!-- or reference a static file -->
+
+{% endblock %}
