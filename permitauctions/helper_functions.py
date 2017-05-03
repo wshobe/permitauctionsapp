@@ -75,8 +75,8 @@ def make_supply_schedule(subsession,constants):
     
 def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
     # these_bids is the bids_df pd data frame
-    #log = logging.getLogger('permitauctionsapp')
-    #log.info('In function: calculate_auction_price')
+    log = logging.getLogger('permitauctionsapp')
+    log.info('In function: calculate_auction_price')
     bids = these_bids.sort(['bid'],ascending=False)
     num_bids = len(bids)
     supply = supply_curve[:num_bids]
@@ -128,11 +128,11 @@ def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
             # Bid falls below the supply curve
             if first_rejected_bid == -1:
                 first_rejected_bid = bids.bid[index]
-                price = supply[index-1]
+                price = max(bids.bid[index],supply[index-1])
                 bids.accepted[index-1] = 1
                 last_positive_bid_index = index - 1
-                #log.info('1st rejected bid - last_positive_bid_index: %d' % last_positive_bid_index)
-                #log.info('1st rejected bid - price: {0:.2f}'.format(price))
+                log.info('1st rejected bid - last_positive_bid_index: %d' % last_positive_bid_index)
+                log.info('1st rejected bid - price: {0:.2f}'.format(price))
             else:
                 # Some bid has already fallen below the supply curve
                 bids.accepted[index-1] = 0
@@ -141,23 +141,23 @@ def calculate_auction_price(these_bids,supply_curve,subsession,reserve_price):
             if bids.bid[index] > supply[index]:
                 # Add permits from the PCR
                 pcr_added += 1
-                #log.info('pcr_added: %d' % pcr_added)
+                log.info('pcr_added: %d' % pcr_added)
                 bids.accepted[index-1] = 1
             else:
                 bids.accepted[index-1] = 1
                 first_rejected_bid = bids.bid[index]
                 price = bids.bid[index]
                 last_positive_bid_index = index - 1
-                #log.info('PCR range - last_positive_bid_index: %d' % last_positive_bid_index)
-                #log.info('PCR range - price: {0:.2f}'.format(price))
+                log.info('PCR range - last_positive_bid_index: %d' % last_positive_bid_index)
+                log.info('PCR range - price: {0:.2f}'.format(price))
     if last_positive_bid_index < q_star - 1:
         ecr_reserve_amount_used = ecr_reserve_amount
         #subsession.permits_available = permits_available - ecr_reserve_amount
-        #log.info('ECR all - last_positive_bid_index: %d' % last_positive_bid_index)
+        log.info('ECR all - last_positive_bid_index: %d' % last_positive_bid_index)
     elif last_positive_bid_index >= q_star -1 and last_positive_bid_index <= permits_available - 1:
         ecr_reserve_amount_used = permits_available - last_positive_bid_index - 1
         #subsession.permits_available = permits_available - self.subsession.ecr_reserve_amount_used 
-        #log.info('ECR range - last_positive_bid_index: %d' % last_positive_bid_index)
+        log.info('ECR range - last_positive_bid_index: %d' % last_positive_bid_index)
     bids = bids.sort_index()
     return {'price':price,
             'first_rejected_bid':first_rejected_bid,
