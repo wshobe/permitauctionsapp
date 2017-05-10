@@ -56,15 +56,18 @@ def make_supply_schedule(subsession,constants):
     reserve_price = constants.reserve_price
     pcr_trigger_price = subsession.session.config['price_containment_trigger']
     q_star = max(0,permits_available - ecr_reserve_amount)
-    if subsession.session.config['supply_step']:
+    if subsession.session.config['ecr_treatment'] == 'Step':
         # Supply reduction in one big step
         supply_step = np.ones(initial_ecr_reserve_amount)*ecr_trigger_price
-    else:
+    elif subsession.session.config['ecr_treatment'] == 'Linear':
         #Smooth linear supply reduction
         supply_step = np.linspace(float(reserve_price)+0.5, ecr_trigger_price,num = ecr_reserve_amount,endpoint=True,retstep=True)
         step_size = supply_step[1]
         supply_step = (supply_step[0]*2).round()/2
         #assert False
+    elif subsession.session.config['ecr_treatment'] == 'None':
+        supply_step = ''
+        q_star = permits_available
     supply = np.empty(num_possible_bids+permits_available+len(supply_step)+pcr_reserve_amount)
     supply[:q_star] = reserve_price
     supply[q_star:permits_available] = supply_step

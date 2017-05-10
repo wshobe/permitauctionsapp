@@ -36,8 +36,10 @@
 	    		<ul>
 				<li>There are {{session.config.price_containment_reserve_amount}} permits to be made available if the auction price 
 					would close above {{session.config.price_containment_trigger}}.</li>
+				{% if session.config.ecr_treatment != 'None' %}	
 				<li>If the auction price would close below {{session.config.ecr_trigger_price}}, 
 					then up to {{session.config.initial_ecr_reserve_amount}} permits may be retired.</li>
+				{% endif %}
 			</td></tr></table>
 			</ul>
 		</td></tr>

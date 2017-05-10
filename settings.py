@@ -182,7 +182,8 @@ SESSION_CONFIGS = [
     'high_output_price_increment': 10,
     'payout_rate': 0.025,
     'price_containment_trigger': 12,
-    'price_containment_reserve_amount': 10 
+    'price_containment_reserve_amount': 10 ,
+    'ecr_treatment':'None'
      }
 ]
 

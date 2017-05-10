@@ -37,7 +37,9 @@
 			<li>Output price this period: <b>{{ subsession.output_price }}</b> per unit produced.</li>
 			<li>Permits for sale at auction this period: {{ permits_available }}</li>
 			<li>Permits sold in the auction: {{subsession.number_sold_auction}}</li>
+			{% if session.config.ecr_treatment != 'None' %}	
 			<li>Permits retired due to low bids in the auction: {{subsession.ecr_reserve_amount_used}}</li>
+			{% endif %}
 			<li>Permits released from the price containment reserve: {{subsession.pcr_amount_added}}</li>
 			<li><em>Auction price: <b>{{subsession.auction_price}}</b>.</em></li>
 		</ul>
