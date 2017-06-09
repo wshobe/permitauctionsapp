@@ -20,7 +20,8 @@ function bid_listen() {
     for(var i = 0; i < selectors.length; i++) {
         var selected = $(selectors[i]).val();
         //the value of the selected element is a string, must cast it as a Number
-        sum += Number(selected) ;
+        //multiplier is set in the Auction.html template
+        sum += Number(selected) * multiplier;
     }
     display_total(sum);
 }

@@ -11,6 +11,13 @@
     // Pass player money template variable to javascript
     var money = {{player_money}};
     
+    //Set multiplier for bid money
+    {% if player.emission_intensity > 1 %}
+    var multiplier = 2;
+    {% else %}
+    var multiplier = 1;
+    {% endif %}
+
     // $(document).ready waits for all of the html to be rendered
     //  this is good practice, because we want to wait and make sure that the
     //  bid form is rendered before we try to add event listeners to them
