@@ -1,8 +1,24 @@
 {% extends "global/Base.html" %}
 {% load staticfiles otree_tags %}
+{% load static %}
 
 {% block title %}
     Auction: Round {{ subsession.round_number }}, Player #{{player.id_in_group}}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass player money template variable to javascript
+    var money = {{player_money}};
+    
+    // $(document).ready waits for all of the html to be rendered
+    //  this is good practice, because we want to wait and make sure that the
+    //  bid form is rendered before we try to add event listeners to them
+    $(document).ready(function() {
+        add_bid_listeners();
+    });
+</script>
+<script src="{% static 'permitauctions/running_total.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -76,7 +92,7 @@
 			</table></div>
 		</td><td style="border: none;">
 			
-    		<table style="border: 1px solid black;;  padding: 10px; align: center;">
+    		<table id="bid_form" style="border: 1px solid black;;  padding: 10px; align: center;">
         		<tr>
 					<th style=" padding: 10px; align: center;"><h4>Enter Bids</h4>
 				{%if player.emission_intensity > 1 %}<span style="font-size: 14px;">
@@ -84,12 +100,19 @@
 					your cost will be <br />twice the bid amount.)</span>
 				{% endif %}</th>
 				</tr>
-        {% for field in bid_entries %}
-			<tr align="center">
-			<td align="center" style=" padding: 10px;"><table style="border-style: none; "> <tr  style="border-style: none; ">
-				<td align="center" style="border-style: none;" >{{ field }}</td></tr> </table></td>
-			</tr>
-        {% endfor %}
+                {% for field in bid_entries %}
+                    <tr align="center">
+                        <td align="center" style=" padding: 10px;">
+                            <table style="border-style: none; ">
+                                <tbody>
+                                    <tr  style="border-style: none; ">
+        				                <td align="center" style="border-style: none;" >{{ field }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                {% endfor %}
 			</table>
 		</td>
 	</tr>

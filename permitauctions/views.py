@@ -174,7 +174,8 @@ class Auction(Page):
             'cost_list': cost_list,
             'bid_table': zip(bid_fields, cost_list),
             'bid_entries': bid_fields[:num_bids],
-            'max_bid_dollar_value': self.player.money + total_net_value
+            'max_bid_dollar_value': self.player.money + total_net_value,
+            'player_money': self.player.money.to_number()
         }
 
     def before_next_page(self):
