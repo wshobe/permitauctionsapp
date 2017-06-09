@@ -29,12 +29,10 @@ function bid_listen() {
 function display_total(total) {
     var bid_form = $("#bid_form");
     
-    //remove the element with id total if it exists
+    //remove the element with id total_message if it exists
     $("#total_message").remove();
 
-    // append new element with correct information
     var message = "<p>Total: " + total + "</p>";
-    
     //money is a variable set in the Auction.html template
     // it is the player's total money
     if(total > money) {
