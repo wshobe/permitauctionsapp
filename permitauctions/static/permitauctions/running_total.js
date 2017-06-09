@@ -33,7 +33,7 @@ function display_total(total) {
     //remove the element with id total_message if it exists
     $("#total_message").remove();
 
-    var message = "<p>Total: " + total + "</p>";
+    var message = "<p>Total: " + format_money(total) + "</p>";
     //money is a variable set in the Auction.html template
     // it is the player's total money
     if(total > money) {
