@@ -23,7 +23,17 @@ function bid_listen() {
         //multiplier is set in the Auction.html template
         sum += Number(selected) * multiplier;
     }
+
     display_total(sum);
+
+    //money is a variable set in the Auction.html template
+    // it is the player's total money
+    if(!allow_deficit && sum > money) {
+        disable_submit();
+    }
+    else {
+        enable_submit();
+    }
 }
 
 //Display the running total on the page
@@ -45,3 +55,12 @@ function display_total(total) {
     bid_form.append(to_display);
 }
 
+function disable_submit() {
+    $("button").prop("disabled", true);
+    $("#disabled-text").text("You can not proceed to the next page until you fix your bid amount");
+}
+
+function enable_submit() {
+    $("button").prop("disabled", false);
+    $("#disabled-text").text(""); // set the text to the empty string
+}

@@ -175,7 +175,8 @@ class Auction(Page):
             'bid_table': zip(bid_fields, cost_list),
             'bid_entries': bid_fields[:num_bids],
             'max_bid_dollar_value': self.player.money + total_net_value,
-            'player_money': self.player.money.to_number()
+            'player_money': self.player.money.to_number(),
+            'allow_deficit': self.session.config["allow_deficit_bids"]
         }
 
     def before_next_page(self):

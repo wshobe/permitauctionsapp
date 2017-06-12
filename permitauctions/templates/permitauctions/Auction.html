@@ -18,6 +18,9 @@
     var multiplier = 1;
     {% endif %}
 
+    //json filter turns python True/False into javascript true/false
+    var allow_deficit = {{allow_deficit|json}} 
+
     // $(document).ready waits for all of the html to be rendered
     //  this is good practice, because we want to wait and make sure that the
     //  bid form is rendered before we try to add event listeners to them
@@ -128,6 +131,7 @@
 
 
     {% next_button %}
+    <p id="disabled-text"></p>
 	
 	<hr><br />
 	<table>

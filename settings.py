@@ -183,7 +183,8 @@ SESSION_CONFIGS = [
     'payout_rate': 0.025,
     'price_containment_trigger': 12,
     'price_containment_reserve_amount': 10 ,
-    'ecr_treatment':'None'
+    'ecr_treatment':'None',
+    'allow_deficit_bids': True,
      }
 ]
 
